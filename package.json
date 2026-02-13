@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "node scripts/generate-png-icons.js || true && next build --webpack",
+    "build": "node scripts/generate-png-icons.js || true && node scripts/generate-firebase-messaging-sw.js || true && next build --webpack",
     "start": "next start",
     "lint": "eslint .",
     "icons": "node scripts/generate-png-icons.js"
