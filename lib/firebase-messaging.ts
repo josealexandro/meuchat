@@ -1,4 +1,4 @@
-import { app } from "@/lib/firebase";
+import app from "@/lib/firebase";
 
 const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
 
