@@ -24,13 +24,12 @@ export function NotificationPrompt() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [hidden, setHidden] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   if (!user || typeof window === "undefined") return null;
   if (!("Notification" in window)) return null;
   if (Notification.permission === "denied") return null;
   if ((wasDismissed() || hidden) && !error) return null;
-
-  const [error, setError] = useState<string | null>(null);
 
   const handleActivate = async () => {
     setLoading(true);
