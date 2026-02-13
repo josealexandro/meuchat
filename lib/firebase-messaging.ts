@@ -20,6 +20,9 @@ export async function getFCMToken(): Promise<FCMTokenResult> {
     if (msg.includes("404") || msg.includes("failed-service-worker-registration")) {
       return { ok: false, error: "Arquivo firebase-messaging-sw.js não encontrado (404). Verifique o deploy." };
     }
+    if (msg.includes("applicationServerKey") || msg.includes("not valid")) {
+      return { ok: false, error: "Chave VAPID inválida. Firebase Console → Configurações → Cloud Messaging → Web Push → gere novamente e atualize na Vercel." };
+    }
     return { ok: false, error: msg };
   }
 }
