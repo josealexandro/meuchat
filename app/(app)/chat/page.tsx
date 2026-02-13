@@ -9,7 +9,6 @@ import { ContactsList } from "@/components/chat/ContactsList";
 import { MessageList } from "@/components/chat/MessageList";
 import { MessageInput } from "@/components/chat/MessageInput";
 import { NotificationPrompt } from "@/components/notifications/NotificationPrompt";
-import { NotificationStatus } from "@/components/notifications/NotificationStatus";
 import { useAuth } from "@/providers/AuthProvider";
 import { useChats } from "@/hooks/useChats";
 import { useUsers } from "@/hooks/useUsers";
@@ -27,7 +26,7 @@ function ChatPageContent() {
 
   useEffect(() => {
     const chatFromUrl = searchParams.get("chat");
-    if (chatFromUrl && chats.some((c) => c.id === chatFromUrl)) {
+    if (chatFromUrl) {
       setSelectedChatId(chatFromUrl);
       const chat = chats.find((c) => c.id === chatFromUrl);
       if (chat) setSelectedOtherUserId(chat.participants.find((p) => p !== user?.uid) ?? null);
@@ -95,7 +94,6 @@ function ChatPageContent() {
           </div>
           <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
             <NotificationPrompt />
-            <NotificationStatus />
             <div className="flex-1 min-h-0 overflow-hidden">
             <ContactsList
               chats={chats}
