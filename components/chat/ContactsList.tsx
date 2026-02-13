@@ -56,7 +56,7 @@ export function ContactsList({
                   <button
                     key={chat.id}
                     onClick={() => onSelectChat(chat.id)}
-                    className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-colors flex flex-col ${
+                    className={`w-full text-left px-3 py-3 sm:py-2.5 rounded-lg text-sm transition-colors flex flex-col touch-manipulation active:bg-slate-100 dark:active:bg-slate-700 ${
                       selectedChatId === chat.id
                         ? "bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300"
                         : "hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200"
@@ -83,7 +83,7 @@ export function ContactsList({
                 <button
                   key={u.id}
                   onClick={() => onSelectContact(u.id)}
-                  className="w-full text-left px-3 py-2.5 rounded-lg text-sm transition-colors hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200"
+                  className="w-full text-left px-3 py-3 sm:py-2.5 rounded-lg text-sm transition-colors hover:bg-slate-100 dark:hover:bg-slate-700 active:bg-slate-200 dark:active:bg-slate-600 text-slate-800 dark:text-slate-200 touch-manipulation"
                 >
                   <span className="font-medium truncate block">
                     {u.displayName || u.email || "Contato"}

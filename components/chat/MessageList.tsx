@@ -16,7 +16,7 @@ export function MessageList({ messages, currentUserId }: MessageListProps) {
   }, [messages]);
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 space-y-3">
+    <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 overscroll-contain">
       {messages.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-full text-slate-500 text-center px-4">
           <p className="text-lg">Nenhuma mensagem ainda</p>
@@ -31,7 +31,7 @@ export function MessageList({ messages, currentUserId }: MessageListProps) {
               className={`flex ${isOwnMessage ? "justify-end" : "justify-start"}`}
             >
               <div
-                className={`max-w-[85%] sm:max-w-[75%] rounded-2xl px-4 py-2.5 ${
+                className={`max-w-[88%] sm:max-w-[75%] rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 ${
                   isOwnMessage
                     ? "bg-primary-500 text-white rounded-br-md"
                     : "bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-bl-md"
@@ -42,7 +42,7 @@ export function MessageList({ messages, currentUserId }: MessageListProps) {
                     {message.displayName || message.userEmail}
                   </p>
                 )}
-                <p className="text-[15px] break-words whitespace-pre-wrap">
+                <p className="text-[15px] break-words whitespace-pre-wrap leading-snug">
                   {message.text}
                 </p>
                 <p

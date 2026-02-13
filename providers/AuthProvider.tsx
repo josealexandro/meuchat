@@ -9,6 +9,7 @@ import {
   onAuthStateChanged,
   GoogleAuthProvider,
   signInWithPopup,
+  updateProfile,
 } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 
@@ -16,7 +17,8 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, displayName?: string) => Promise<void>;
+  updateDisplayName: (displayName: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -40,8 +42,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await signInWithEmailAndPassword(auth, email, password);
   };
 
-  const signUp = async (email: string, password: string) => {
-    await createUserWithEmailAndPassword(auth, email, password);
+  const signUp = async (email: string, password: string, displayName?: string) => {
+    const { user: newUser } = await createUserWithEmailAndPassword(auth, email, password);
+    if (displayName?.trim()) {
+      await updateProfile(newUser, { displayName: displayName.trim() });
+    }
+  };
+
+  const updateDisplayName = async (displayName: string) => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) throw new Error("Não autenticado");
+    await updateProfile(currentUser, { displayName: displayName.trim() });
+    setUser(auth.currentUser);
   };
 
   const signInWithGoogle = async () => {
@@ -60,6 +72,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signUp,
     signInWithGoogle,
     signOut,
+    updateDisplayName,
   };
 
   return (
