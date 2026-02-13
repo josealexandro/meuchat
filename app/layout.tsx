@@ -5,12 +5,12 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Chat da Família",
+  title: "meuchat",
   description: "Chat privado para a família",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "FamChat",
+    title: "meuchat",
   },
 };
 

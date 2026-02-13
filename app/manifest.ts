@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Chat da Família",
-    short_name: "FamChat",
+    name: "meuchat",
+    short_name: "meuchat",
     description: "Chat privado para a família",
     start_url: "/",
     display: "standalone",

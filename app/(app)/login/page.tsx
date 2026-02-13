@@ -59,7 +59,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl p-6 sm:p-8 border border-slate-200/50 dark:border-slate-700/50">
           <h1 className="text-xl sm:text-2xl font-bold text-center text-slate-900 dark:text-white mb-2">
-            Chat da Família
+            meuchat
           </h1>
           <p className="text-center text-slate-500 dark:text-slate-400 mb-6 sm:mb-8 text-sm">
             Entre para conversar com sua família

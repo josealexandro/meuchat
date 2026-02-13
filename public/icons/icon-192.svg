@@ -2,5 +2,5 @@
   <rect width="192" height="192" rx="32" fill="#0ea5e9"/>
   <path d="M60 70 Q96 50 132 70 L132 110 Q96 130 60 110 Z" fill="white" opacity="0.9"/>
   <circle cx="96" cy="90" r="12" fill="white"/>
-  <text x="96" y="155" text-anchor="middle" fill="white" font-size="24" font-weight="bold" font-family="system-ui,sans-serif">FC</text>
+  <text x="96" y="155" text-anchor="middle" fill="white" font-size="24" font-weight="bold" font-family="system-ui,sans-serif">MC</text>
 </svg>

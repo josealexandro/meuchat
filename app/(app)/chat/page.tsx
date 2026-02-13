@@ -67,7 +67,7 @@ function ChatPageContent() {
         <div className="flex flex-col h-full">
           <div className="p-3 pt-[env(safe-area-inset-top)] pb-3 border-b border-slate-200 dark:border-slate-700 shrink-0">
             <div className="flex items-center justify-between">
-              <h1 className="text-lg font-semibold text-slate-900 dark:text-white">Chat da Família</h1>
+              <h1 className="text-lg font-semibold text-slate-900 dark:text-white">meuchat</h1>
               <button
                 onClick={() => signOut()}
                 className="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 active:bg-slate-100 dark:active:bg-slate-800 touch-manipulation"

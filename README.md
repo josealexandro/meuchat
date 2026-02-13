@@ -1,4 +1,4 @@
-# Chat da Família
+# meuchat
 
 A production-ready private family chat built with Next.js 16, Firebase Auth, and Firestore.
 
