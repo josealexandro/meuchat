@@ -8,6 +8,7 @@ import { ContactsList } from "@/components/chat/ContactsList";
 import { MessageList } from "@/components/chat/MessageList";
 import { MessageInput } from "@/components/chat/MessageInput";
 import { NotificationPrompt } from "@/components/notifications/NotificationPrompt";
+import { NotificationStatus } from "@/components/notifications/NotificationStatus";
 import { useAuth } from "@/providers/AuthProvider";
 import { useChats } from "@/hooks/useChats";
 import { useUsers } from "@/hooks/useUsers";
@@ -83,6 +84,7 @@ function ChatPageContent() {
           </div>
           <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
             <NotificationPrompt />
+            <NotificationStatus />
             <div className="flex-1 min-h-0 overflow-hidden">
             <ContactsList
               chats={chats}

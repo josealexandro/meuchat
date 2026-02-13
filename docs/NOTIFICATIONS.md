@@ -60,3 +60,28 @@ match /users/{userId} {
 3. Se aceitar, o token FCM é salvo em `users/{uid}.fcmToken`
 4. Quando alguém envia mensagem, a Cloud Function dispara e envia push ao destinatário
 5. O serviço worker `firebase-messaging-sw.js` recebe e exibe a notificação (mesmo com app fechado)
+
+## Debug – não funcionou?
+
+### 1. No chat, abra "Status das notificações"
+- **Permissão**: deve ser `granted`
+- **Token salvo**: deve ser `Sim`
+- **Service worker**: deve ser `OK`
+
+### 2. Se token não salvo
+- Abra o console do navegador (F12 → Console)
+- Procure por `[meuchat] getFCMToken failed:`
+- Erros comuns:
+  - **404 em firebase-messaging-sw.js**: confira se a URL do app tem `/firebase-messaging-sw.js` (ex: `https://seu-app.vercel.app/firebase-messaging-sw.js`)
+  - **VAPID inválido**: confirme a chave no Firebase Console e na Vercel
+  - **Messaging not supported**: dispositivo/navegador não suporta
+
+### 3. Se token salvo mas não chega notificação
+- Firebase Console → Functions → Logs
+- Procure por `onNewMessage`
+- `Recipient has no fcmToken` = destinatário não ativou notificações
+- `Push sent` = mensagem enviada; se não chegou, pode ser bloqueio do navegador/OS
+
+### 4. Conferir Firestore
+- Firebase Console → Firestore
+- `users/{uid}` do destinatário deve ter o campo `fcmToken` (string longa)

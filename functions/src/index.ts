@@ -12,35 +12,53 @@ const db = admin.firestore();
 export const onNewMessage = functions.firestore
   .document("chats/{chatId}/messages/{messageId}")
   .onCreate(async (snap, context) => {
-    const { chatId } = context.params;
-    const message = snap.data();
-    const senderId = message.userId as string;
-    const text = (message.text as string) || "";
-    const senderName = (message.displayName as string) || (message.userEmail as string) || "Alguém";
+    try {
+      const { chatId } = context.params;
+      const message = snap.data();
+      const senderId = message.userId as string;
+      const text = (message.text as string) || "";
+      const senderName = (message.displayName as string) || (message.userEmail as string) || "Alguém";
 
-    const chatSnap = await db.collection("chats").doc(chatId).get();
-    if (!chatSnap.exists) return;
+      const chatSnap = await db.collection("chats").doc(chatId).get();
+      if (!chatSnap.exists) {
+        functions.logger.warn("Chat not found", { chatId });
+        return;
+      }
 
-    const participants = chatSnap.data()?.participants as string[] | undefined;
-    if (!participants) return;
+      const participants = chatSnap.data()?.participants as string[] | undefined;
+      if (!participants?.length) {
+        functions.logger.warn("No participants", { chatId });
+        return;
+      }
 
-    const recipientId = participants.find((p: string) => p !== senderId);
-    if (!recipientId) return;
+      const recipientId = participants.find((p: string) => p !== senderId);
+      if (!recipientId) {
+        functions.logger.warn("Recipient not found", { chatId, senderId });
+        return;
+      }
 
-    const userSnap = await db.collection("users").doc(recipientId).get();
-    const fcmToken = userSnap.data()?.fcmToken as string | undefined;
-    if (!fcmToken) return;
+      const userSnap = await db.collection("users").doc(recipientId).get();
+      const fcmToken = userSnap.data()?.fcmToken as string | undefined;
+      if (!fcmToken) {
+        functions.logger.info("Recipient has no fcmToken", { recipientId });
+        return;
+      }
 
-    await admin.messaging().send({
-      token: fcmToken,
-      notification: {
-        title: senderName,
-        body: text.length > 100 ? text.slice(0, 97) + "..." : text,
-      },
-      data: {
-        chatId,
-        senderId,
-        type: "message",
-      },
-    });
+      await admin.messaging().send({
+        token: fcmToken,
+        notification: {
+          title: senderName,
+          body: text.length > 100 ? text.slice(0, 97) + "..." : text,
+        },
+        data: {
+          chatId,
+          senderId,
+          type: "message",
+        },
+      });
+      functions.logger.info("Push sent", { recipientId, chatId });
+    } catch (err) {
+      functions.logger.error("onNewMessage failed", err);
+      throw err;
+    }
   });
