@@ -29,6 +29,7 @@ export function NotificationPrompt() {
   if (!user || typeof window === "undefined") return null;
   if (!("Notification" in window)) return null;
   if (Notification.permission === "denied") return null;
+  if (Notification.permission === "granted") return null; // já ativou, não mostrar
   if ((wasDismissed() || hidden) && !error) return null;
 
   const handleActivate = async () => {
