@@ -55,19 +55,19 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-[100dvh] flex items-center justify-center p-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] bg-gradient-to-br from-slate-50 via-primary-50/30 to-slate-100 dark:from-slate-900 dark:via-primary-950/20 dark:to-slate-800 overflow-y-auto">
+    <div className="min-h-[100dvh] flex items-center justify-center p-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] overflow-y-auto">
       <div className="w-full max-w-md">
-        <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl p-6 sm:p-8 border border-slate-200/50 dark:border-slate-700/50">
-          <h1 className="text-xl sm:text-2xl font-bold text-center text-slate-900 dark:text-white mb-2">
+        <div className="bg-primary-800/90 backdrop-blur rounded-2xl shadow-xl p-6 sm:p-8 border border-white/20">
+          <h1 className="text-xl sm:text-2xl font-bold text-center text-white mb-2">
             meuchat
           </h1>
-          <p className="text-center text-slate-500 dark:text-slate-400 mb-6 sm:mb-8 text-sm">
+          <p className="text-center text-white/80 mb-6 sm:mb-8 text-sm">
             Entre para conversar com sua família
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+              <label htmlFor="email" className="block text-sm font-medium text-white mb-1">
                 E-mail
               </label>
               <input
@@ -77,13 +77,13 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 autoComplete="email"
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-base"
+                className="w-full px-4 py-3 rounded-xl border border-white/30 bg-primary-900/50 text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent text-base"
                 placeholder="seu@email.com"
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+              <label htmlFor="password" className="block text-sm font-medium text-white mb-1">
                 Senha
               </label>
               <input
@@ -93,13 +93,13 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 autoComplete="current-password"
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-base"
+                className="w-full px-4 py-3 rounded-xl border border-white/30 bg-primary-900/50 text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent text-base"
                 placeholder="••••••••"
               />
             </div>
 
             {error && (
-              <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm">
+              <div className="p-3 rounded-lg bg-red-500/20 text-red-100 text-sm">
                 {error}
               </div>
             )}
@@ -107,7 +107,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 px-4 rounded-xl bg-primary-500 hover:bg-primary-600 active:bg-primary-600 text-white font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 touch-manipulation min-h-[48px]"
+              className="w-full py-3 px-4 rounded-xl bg-accent-500 hover:bg-accent-600 active:bg-accent-600 text-white font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2 focus:ring-offset-primary-800 touch-manipulation min-h-[48px]"
             >
               {isLoading ? "Entrando..." : "Entrar"}
             </button>
@@ -115,10 +115,10 @@ export default function LoginPage() {
 
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-200 dark:border-slate-600" />
+              <div className="w-full border-t border-white/20" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white dark:bg-slate-900 text-slate-500">ou</span>
+              <span className="px-2 bg-primary-800/90 text-white/60">ou</span>
             </div>
           </div>
 
@@ -126,7 +126,7 @@ export default function LoginPage() {
             type="button"
             onClick={handleGoogleSignIn}
             disabled={isLoading}
-            className="w-full py-3 px-4 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 active:bg-slate-100 dark:active:bg-slate-600 text-slate-700 dark:text-slate-300 font-medium transition-colors disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-slate-400 dark:focus:ring-slate-500 focus:ring-offset-2 flex items-center justify-center gap-2 touch-manipulation min-h-[48px]"
+            className="w-full py-3 px-4 rounded-xl border border-white/30 bg-white/10 hover:bg-white/20 active:bg-white/30 text-white font-medium transition-colors disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-white/40 focus:ring-offset-2 focus:ring-offset-primary-800 flex items-center justify-center gap-2 touch-manipulation min-h-[48px]"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -137,9 +137,9 @@ export default function LoginPage() {
             Entrar com Google
           </button>
 
-          <p className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
+          <p className="mt-6 text-center text-sm text-white/80">
             Não tem conta?{" "}
-            <Link href="/login/signup" className="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400">
+            <Link href="/login/signup" className="font-medium text-accent-400 hover:text-accent-300">
               Criar conta
             </Link>
           </p>

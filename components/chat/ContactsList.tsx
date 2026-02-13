@@ -39,14 +39,14 @@ export function ContactsList({
   return (
     <div className="flex flex-col h-full overflow-y-auto">
       {loading ? (
-        <div className="p-4 text-center text-slate-500 text-sm">
+        <div className="p-4 text-center text-white/70 text-sm">
           Carregando...
         </div>
       ) : (
         <>
           {chats.length > 0 && (
             <div className="p-2">
-              <p className="px-3 py-1 text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              <p className="px-3 py-1 text-xs font-medium text-white/60 uppercase tracking-wider">
                 Conversas
               </p>
               {chats.map((chat) => {
@@ -56,15 +56,15 @@ export function ContactsList({
                   <button
                     key={chat.id}
                     onClick={() => onSelectChat(chat.id)}
-                    className={`w-full text-left px-3 py-3 sm:py-2.5 rounded-lg text-sm transition-colors flex flex-col touch-manipulation active:bg-slate-100 dark:active:bg-slate-700 ${
+                    className={`w-full text-left px-3 py-3 sm:py-2.5 rounded-lg text-sm transition-colors flex flex-col touch-manipulation ${
                       selectedChatId === chat.id
-                        ? "bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300"
-                        : "hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200"
+                        ? "bg-accent-500/30 text-white"
+                        : "hover:bg-white/10 active:bg-white/15 text-white"
                     }`}
                   >
                     <span className="font-medium truncate">{name}</span>
                     {chat.lastMessage && (
-                      <span className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                      <span className="text-xs text-white/70 truncate mt-0.5">
                         {chat.lastMessage}
                       </span>
                     )}
@@ -75,15 +75,15 @@ export function ContactsList({
           )}
 
           {usersWithoutChat.length > 0 && (
-            <div className="p-2 border-t border-slate-200 dark:border-slate-700">
-              <p className="px-3 py-1 text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            <div className="p-2 border-t border-white/20">
+              <p className="px-3 py-1 text-xs font-medium text-white/60 uppercase tracking-wider">
                 Contatos
               </p>
               {usersWithoutChat.map((u) => (
                 <button
                   key={u.id}
                   onClick={() => onSelectContact(u.id)}
-                  className="w-full text-left px-3 py-3 sm:py-2.5 rounded-lg text-sm transition-colors hover:bg-slate-100 dark:hover:bg-slate-700 active:bg-slate-200 dark:active:bg-slate-600 text-slate-800 dark:text-slate-200 touch-manipulation"
+                  className="w-full text-left px-3 py-3 sm:py-2.5 rounded-lg text-sm transition-colors hover:bg-white/10 active:bg-white/15 text-white touch-manipulation"
                 >
                   <span className="font-medium truncate block">
                     {u.displayName || u.email || "Contato"}
@@ -94,7 +94,7 @@ export function ContactsList({
           )}
 
           {chats.length === 0 && usersWithoutChat.length === 0 && (
-            <div className="p-4 text-center text-slate-500 text-sm">
+            <div className="p-4 text-center text-white/70 text-sm">
               Nenhum contato ainda.
               <br />
               Peça para alguém da família entrar no app!

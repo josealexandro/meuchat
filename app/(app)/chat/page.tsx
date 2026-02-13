@@ -55,27 +55,27 @@ function ChatPageContent() {
   const showListOnMobile = !selectedChatId;
 
   return (
-    <div className="flex h-[100dvh] bg-slate-50 dark:bg-slate-900">
+    <div className="flex h-[100dvh]">
       {/* Sidebar - hidden on mobile when chat is open */}
       <aside
         className={`
-          shrink-0 flex-col border-r border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900
+          shrink-0 flex-col border-r border-white/20 bg-primary-900/80 backdrop-blur
           md:flex md:w-72
           ${showListOnMobile ? "flex w-full" : "hidden"}
         `}
       >
         <div className="flex flex-col h-full">
-          <div className="p-3 pt-[env(safe-area-inset-top)] pb-3 border-b border-slate-200 dark:border-slate-700 shrink-0">
+          <div className="p-3 pt-[env(safe-area-inset-top)] pb-3 border-b border-white/20 shrink-0">
             <div className="flex items-center justify-between">
-              <h1 className="text-lg font-semibold text-slate-900 dark:text-white">meuchat</h1>
+              <h1 className="text-lg font-semibold text-white">meuchat</h1>
               <button
                 onClick={() => signOut()}
-                className="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 active:bg-slate-100 dark:active:bg-slate-800 touch-manipulation"
+                className="px-3 py-2 rounded-lg text-sm font-medium text-white/80 hover:text-white active:bg-white/10 touch-manipulation"
               >
                 Sair
               </button>
             </div>
-            <Link href="/profile" className="flex items-center gap-2 mt-2 text-sm text-slate-500 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400">
+            <Link href="/profile" className="flex items-center gap-2 mt-2 text-sm text-white/80 hover:text-accent-400">
               <span className="truncate">{user?.displayName || user?.email || "Perfil"}</span>
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 18 6-6-6-6" /></svg>
             </Link>
@@ -105,17 +105,17 @@ function ChatPageContent() {
           <>
             <ChatLayout
               header={
-                <div className="flex items-center gap-2 px-3 py-3 pt-[calc(0.75rem+env(safe-area-inset-top))] pb-3 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shrink-0">
+                <div className="flex items-center gap-2 px-3 py-3 pt-[calc(0.75rem+env(safe-area-inset-top))] pb-3 border-b border-white/20 bg-primary-900/80 backdrop-blur shrink-0">
                   <button
                     onClick={handleBack}
-                    className="md:hidden p-2 -ml-1 rounded-lg text-slate-600 dark:text-slate-400 active:bg-slate-100 dark:active:bg-slate-800 touch-manipulation"
+                    className="md:hidden p-2 -ml-1 rounded-lg text-white/80 active:bg-white/10 touch-manipulation"
                     aria-label="Voltar"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="m15 18-6-6 6-6" />
                     </svg>
                   </button>
-                  <h2 className="flex-1 text-lg font-semibold text-slate-900 dark:text-white truncate">
+                  <h2 className="flex-1 text-lg font-semibold text-white truncate">
                     {displayName}
                   </h2>
                 </div>
@@ -123,7 +123,7 @@ function ChatPageContent() {
               input={<MessageInput onSend={handleSendMessage} disabled={messagesLoading || !!error} />}
             >
               {error && (
-                <div className="p-3 mx-3 mt-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm">
+                <div className="p-3 mx-3 mt-3 rounded-lg bg-red-500/20 text-red-100 text-sm">
                   {error}
                 </div>
               )}
@@ -131,7 +131,7 @@ function ChatPageContent() {
             </ChatLayout>
           </>
         ) : (
-          <div className="hidden md:flex flex-1 items-center justify-center text-slate-500 dark:text-slate-400">
+          <div className="hidden md:flex flex-1 items-center justify-center text-white/70">
             <div className="text-center p-8">
               <p className="text-lg mb-2">Selecione um contato</p>
               <p className="text-sm">Escolha uma conversa ou clique em um contato para iniciar.</p>

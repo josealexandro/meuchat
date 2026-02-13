@@ -38,7 +38,7 @@ export function MessageInput({ onSend, disabled }: MessageInputProps) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="p-3 sm:p-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900"
+      className="p-3 sm:p-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] border-t border-white/20 bg-primary-900/80 backdrop-blur"
     >
       <div className="flex gap-2 items-end">
         <textarea
@@ -49,12 +49,12 @@ export function MessageInput({ onSend, disabled }: MessageInputProps) {
           rows={1}
           maxLength={2000}
           disabled={disabled}
-          className="flex-1 resize-none rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 px-3 py-2.5 sm:px-4 sm:py-3 text-base sm:text-[15px] text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:opacity-50 min-h-[44px] max-h-32 touch-manipulation"
+          className="flex-1 resize-none rounded-xl border border-white/30 bg-primary-900/50 px-3 py-2.5 sm:px-4 sm:py-3 text-base sm:text-[15px] text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent disabled:opacity-50 min-h-[44px] max-h-32 touch-manipulation"
         />
         <button
           type="submit"
           disabled={disabled || !text.trim() || isSending}
-          className="shrink-0 h-[44px] min-w-[44px] px-4 rounded-xl bg-primary-500 hover:bg-primary-600 active:bg-primary-600 text-white font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 touch-manipulation"
+          className="shrink-0 h-[44px] min-w-[44px] px-4 rounded-xl bg-accent-500 hover:bg-accent-600 active:bg-accent-600 text-white font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2 focus:ring-offset-primary-900 touch-manipulation"
         >
           Enviar
         </button>

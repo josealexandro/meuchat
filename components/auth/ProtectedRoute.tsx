@@ -20,8 +20,8 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
-        <div className="animate-pulse text-slate-500">Carregando...</div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-pulse text-white/80">Carregando...</div>
       </div>
     );
   }

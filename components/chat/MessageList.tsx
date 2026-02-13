@@ -18,7 +18,7 @@ export function MessageList({ messages, currentUserId }: MessageListProps) {
   return (
     <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 overscroll-contain">
       {messages.length === 0 ? (
-        <div className="flex flex-col items-center justify-center h-full text-slate-500 text-center px-4">
+        <div className="flex flex-col items-center justify-center h-full text-white/70 text-center px-4">
           <p className="text-lg">Nenhuma mensagem ainda</p>
           <p className="text-sm mt-1">Seja o primeiro a enviar uma mensagem!</p>
         </div>
@@ -33,12 +33,12 @@ export function MessageList({ messages, currentUserId }: MessageListProps) {
               <div
                 className={`max-w-[88%] sm:max-w-[75%] rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 ${
                   isOwnMessage
-                    ? "bg-primary-500 text-white rounded-br-md"
-                    : "bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-bl-md"
+                    ? "bg-accent-500 text-white rounded-br-md"
+                    : "bg-primary-700/80 text-white rounded-bl-md"
                 }`}
               >
                 {!isOwnMessage && (
-                  <p className="text-xs font-medium text-primary-600 dark:text-primary-400 mb-0.5">
+                  <p className="text-xs font-medium text-accent-400 mb-0.5">
                     {message.displayName || message.userEmail}
                   </p>
                 )}
@@ -47,7 +47,7 @@ export function MessageList({ messages, currentUserId }: MessageListProps) {
                 </p>
                 <p
                   className={`text-[10px] mt-0.5 ${
-                    isOwnMessage ? "text-primary-100" : "text-slate-500 dark:text-slate-400"
+                    isOwnMessage ? "text-white/80" : "text-white/70"
                   }`}
                 >
                   {message.createdAt?.toDate?.()

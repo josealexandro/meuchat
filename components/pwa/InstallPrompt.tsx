@@ -133,7 +133,7 @@ export function InstallPrompt() {
     : "Adicione à tela inicial para usar como app";
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] bg-slate-800 dark:bg-slate-900 border-t border-slate-700 shadow-lg">
+    <div className="fixed bottom-0 left-0 right-0 z-50 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] bg-primary-900/95 backdrop-blur border-t border-white/20 shadow-lg">
       <div className="max-w-lg mx-auto flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
         <div className="flex-1 text-center sm:text-left">
           <p className="text-sm font-medium text-white">Baixe o {APP_NAME}</p>
@@ -143,13 +143,13 @@ export function InstallPrompt() {
           <button
             onClick={handleInstall}
             disabled={installing}
-            className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-medium text-sm disabled:opacity-70 touch-manipulation"
+            className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-accent-500 hover:bg-accent-600 text-white font-medium text-sm disabled:opacity-70 touch-manipulation"
           >
             {installing ? "Abrindo..." : showManualHint ? "Adicionar" : "Baixar"}
           </button>
           <button
             onClick={handleDismiss}
-            className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-slate-300 hover:text-white hover:bg-slate-700 text-sm touch-manipulation"
+            className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-white/80 hover:text-white hover:bg-white/10 text-sm touch-manipulation"
           >
             Agora não
           </button>
