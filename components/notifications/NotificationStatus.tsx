@@ -24,6 +24,7 @@ export function NotificationStatus() {
       return;
     }
 
+    const userId = user.uid;
     let cancelled = false;
 
     async function check() {
@@ -32,7 +33,7 @@ export function NotificationStatus() {
       let swRegistered = false;
 
       try {
-        const userSnap = await getDoc(doc(db, FIRESTORE_COLLECTIONS.USERS, user.uid));
+        const userSnap = await getDoc(doc(db, FIRESTORE_COLLECTIONS.USERS, userId));
         hasToken = !!userSnap.data()?.fcmToken;
       } catch {}
 
@@ -48,7 +49,7 @@ export function NotificationStatus() {
 
     check();
     return () => { cancelled = true; };
-  }, [user]);
+  }, [user?.uid]);
 
   if (!user || !status) return null;
 
