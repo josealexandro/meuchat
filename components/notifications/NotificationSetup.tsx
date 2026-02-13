@@ -20,11 +20,11 @@ export function NotificationSetup() {
     if (Notification.permission !== "granted") return;
 
     let cancelled = false;
-    getFCMToken().then(async (token) => {
-      if (cancelled || !token) return;
+    getFCMToken().then(async (result) => {
+      if (cancelled || !result.ok) return;
       try {
         const userRef = doc(db, FIRESTORE_COLLECTIONS.USERS, user.uid);
-        await setDoc(userRef, { fcmToken: token, fcmTokenUpdatedAt: new Date() }, { merge: true });
+        await setDoc(userRef, { fcmToken: result.token, fcmTokenUpdatedAt: new Date() }, { merge: true });
       } catch {
         // Silent
       }
