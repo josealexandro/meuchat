@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { ChatLayout } from "@/components/chat/ChatLayout";
@@ -15,6 +16,7 @@ import { useUsers } from "@/hooks/useUsers";
 import { useMessages } from "@/hooks/useMessages";
 
 function ChatPageContent() {
+  const searchParams = useSearchParams();
   const { user, signOut } = useAuth();
   const { users, loading: usersLoading } = useUsers(user?.uid ?? null);
   const { chats, loading: chatsLoading, getOrCreateChat, updateChatLastMessage } = useChats(user ?? null);
@@ -22,6 +24,15 @@ function ChatPageContent() {
   const [selectedOtherUserId, setSelectedOtherUserId] = useState<string | null>(null);
 
   const { messages, loading: messagesLoading, error, sendMessage } = useMessages(user ?? null, selectedChatId);
+
+  useEffect(() => {
+    const chatFromUrl = searchParams.get("chat");
+    if (chatFromUrl && chats.some((c) => c.id === chatFromUrl)) {
+      setSelectedChatId(chatFromUrl);
+      const chat = chats.find((c) => c.id === chatFromUrl);
+      if (chat) setSelectedOtherUserId(chat.participants.find((p) => p !== user?.uid) ?? null);
+    }
+  }, [searchParams, chats, user?.uid]);
 
   const selectedChat = chats.find((c) => c.id === selectedChatId);
   const otherParticipantId = selectedChat?.participants.find((p) => p !== user?.uid) ?? selectedOtherUserId;
