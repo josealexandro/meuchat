@@ -90,14 +90,31 @@ export function InstallPrompt() {
   }, []);
 
   const handleInstall = async () => {
-    if (!deferredPrompt) return;
-    setInstalling(true);
-    try {
-      await deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === "accepted") setVisible(false);
-    } finally {
-      setInstalling(false);
+    if (deferredPrompt) {
+      setInstalling(true);
+      try {
+        await deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === "accepted") setVisible(false);
+      } finally {
+        setInstalling(false);
+      }
+      return;
+    }
+    if (showManualHint && typeof navigator !== "undefined" && navigator.share) {
+      setInstalling(true);
+      try {
+        await navigator.share({
+          title: APP_NAME,
+          url: window.location.href,
+          text: `Adicione o ${APP_NAME} à tela inicial`,
+        });
+        setVisible(false);
+      } catch {
+        /* usuário cancelou ou share falhou - mantém o banner com instruções */
+      } finally {
+        setInstalling(false);
+      }
     }
   };
 
@@ -123,15 +140,13 @@ export function InstallPrompt() {
           <p className="text-xs text-slate-300">{subtitle}</p>
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
-          {!showManualHint && (
-            <button
-              onClick={handleInstall}
-              disabled={installing}
-              className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-medium text-sm disabled:opacity-70 touch-manipulation"
-            >
-              {installing ? "Instalando..." : "Baixar"}
-            </button>
-          )}
+          <button
+            onClick={handleInstall}
+            disabled={installing}
+            className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-medium text-sm disabled:opacity-70 touch-manipulation"
+          >
+            {installing ? "Abrindo..." : showManualHint ? "Adicionar" : "Baixar"}
+          </button>
           <button
             onClick={handleDismiss}
             className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-slate-300 hover:text-white hover:bg-slate-700 text-sm touch-manipulation"
