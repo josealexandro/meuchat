@@ -21,6 +21,7 @@ export function UserSync() {
       userRef,
       {
         email: user.email ?? "",
+        emailLower: (user.email ?? "").toLowerCase(),
         displayName: user.displayName ?? null,
         updatedAt: new Date(),
       },

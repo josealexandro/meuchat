@@ -6,12 +6,14 @@ import Link from "next/link";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { ChatLayout } from "@/components/chat/ChatLayout";
 import { ContactsList } from "@/components/chat/ContactsList";
+import { AddContactModal } from "@/components/chat/AddContactModal";
 import { MessageList } from "@/components/chat/MessageList";
 import { MessageInput } from "@/components/chat/MessageInput";
 import { NotificationPrompt } from "@/components/notifications/NotificationPrompt";
 import { useAuth } from "@/providers/AuthProvider";
 import { useChats } from "@/hooks/useChats";
 import { useUsers } from "@/hooks/useUsers";
+import { useContacts } from "@/hooks/useContacts";
 import { useMessages } from "@/hooks/useMessages";
 
 function ChatPageContent() {
@@ -19,8 +21,10 @@ function ChatPageContent() {
   const { user, signOut } = useAuth();
   const { users, loading: usersLoading } = useUsers(user?.uid ?? null);
   const { chats, loading: chatsLoading, getOrCreateChat, updateChatLastMessage } = useChats(user ?? null);
+  const { contactIds, loading: contactsLoading, addContact } = useContacts(user?.uid ?? null);
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
   const [selectedOtherUserId, setSelectedOtherUserId] = useState<string | null>(null);
+  const [addContactOpen, setAddContactOpen] = useState(false);
 
   const { messages, loading: messagesLoading, error, sendMessage } = useMessages(user ?? null, selectedChatId);
 
@@ -98,11 +102,18 @@ function ChatPageContent() {
             <ContactsList
               chats={chats}
               users={users}
+              contactIds={contactIds}
               currentUserId={user?.uid ?? ""}
               selectedChatId={selectedChatId}
               onSelectChat={handleSelectChat}
               onSelectContact={handleSelectContact}
-              loading={chatsLoading || usersLoading}
+              onOpenAddContact={() => setAddContactOpen(true)}
+              loading={chatsLoading || usersLoading || contactsLoading}
+            />
+            <AddContactModal
+              isOpen={addContactOpen}
+              onClose={() => setAddContactOpen(false)}
+              onAdd={addContact}
             />
             </div>
           </div>

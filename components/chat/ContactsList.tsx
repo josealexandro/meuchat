@@ -6,10 +6,12 @@ import type { AppUser } from "@/types/user";
 interface ContactsListProps {
   chats: Chat[];
   users: AppUser[];
+  contactIds: Set<string>;
   currentUserId: string;
   selectedChatId: string | null;
   onSelectChat: (chatId: string) => void;
   onSelectContact: (otherUserId: string) => Promise<void>;
+  onOpenAddContact: () => void;
   loading?: boolean;
 }
 
@@ -20,10 +22,12 @@ function getOtherParticipant(chat: Chat, currentUserId: string): string {
 export function ContactsList({
   chats,
   users,
+  contactIds,
   currentUserId,
   selectedChatId,
   onSelectChat,
   onSelectContact,
+  onOpenAddContact,
   loading,
 }: ContactsListProps) {
   const getUserName = (userId: string) => {
@@ -34,7 +38,9 @@ export function ContactsList({
   const chatUserIds = new Set(
     chats.flatMap((c) => c.participants.filter((p) => p !== currentUserId))
   );
-  const usersWithoutChat = users.filter((u) => !chatUserIds.has(u.id));
+  const usersWithoutChat = users.filter(
+    (u) => contactIds.has(u.id) && !chatUserIds.has(u.id)
+  );
 
   return (
     <div className="flex flex-col h-full overflow-y-auto">
@@ -74,12 +80,20 @@ export function ContactsList({
             </div>
           )}
 
-          {usersWithoutChat.length > 0 && (
-            <div className="p-2 border-t border-white/20">
-              <p className="px-3 py-1 text-xs font-medium text-white/60 uppercase tracking-wider">
+          <div className="p-2 border-t border-white/20">
+            <div className="flex items-center justify-between px-3 py-1">
+              <p className="text-xs font-medium text-white/60 uppercase tracking-wider">
                 Contatos
               </p>
-              {usersWithoutChat.map((u) => (
+              <button
+                onClick={onOpenAddContact}
+                className="text-xs font-medium text-accent-400 hover:text-accent-300 touch-manipulation"
+              >
+                + Adicionar
+              </button>
+            </div>
+            {usersWithoutChat.length > 0 ? (
+              usersWithoutChat.map((u) => (
                 <button
                   key={u.id}
                   onClick={() => onSelectContact(u.id)}
@@ -89,11 +103,15 @@ export function ContactsList({
                     {u.displayName || u.email || "Contato"}
                   </span>
                 </button>
-              ))}
-            </div>
-          )}
+              ))
+            ) : (
+              <p className="px-3 py-2 text-xs text-white/50">
+                Adicione pelo e-mail para conversar.
+              </p>
+            )}
+          </div>
 
-          {chats.length === 0 && usersWithoutChat.length === 0 && (
+          {chats.length === 0 && contactIds.size === 0 && (
             <div className="p-4 text-center text-white/70 text-sm">
               Nenhum contato ainda.
               <br />

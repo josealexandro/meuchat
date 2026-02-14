@@ -7,7 +7,8 @@
     "build": "node scripts/generate-png-icons.js || true && node scripts/generate-firebase-messaging-sw.js || true && next build --webpack",
     "start": "next start",
     "lint": "eslint .",
-    "icons": "node scripts/generate-png-icons.js"
+    "icons": "node scripts/generate-png-icons.js",
+    "migrate-contacts": "node scripts/migrate-contacts.js"
   },
   "dependencies": {
     "firebase": "^10.7.1",
