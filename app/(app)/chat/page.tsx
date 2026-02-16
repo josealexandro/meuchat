@@ -83,7 +83,10 @@ function ChatPageContent() {
         <div className="flex flex-col h-full">
           <div className="p-3 pt-[env(safe-area-inset-top)] pb-3 border-b border-white/20 shrink-0">
             <div className="flex items-center justify-between">
-              <h1 className="text-lg font-semibold text-white">meuchat</h1>
+              <div className="flex items-center gap-2">
+                <img src="/icons/logo.png" alt="" className="w-8 h-8 rounded-lg object-contain" />
+                <h1 className="text-lg font-semibold text-white">meuchat</h1>
+              </div>
               <button
                 onClick={() => signOut()}
                 className="px-3 py-2 rounded-lg text-sm font-medium text-white/80 hover:text-white active:bg-white/10 touch-manipulation"

@@ -58,9 +58,10 @@ export default function LoginPage() {
     <div className="min-h-[100dvh] flex items-center justify-center p-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] overflow-y-auto">
       <div className="w-full max-w-md">
         <div className="bg-primary-800/90 backdrop-blur rounded-2xl shadow-xl p-6 sm:p-8 border border-white/20">
-          <h1 className="text-xl sm:text-2xl font-bold text-center text-white mb-2">
-            meuchat
-          </h1>
+          <div className="flex flex-col items-center mb-4">
+            <img src="/icons/logo.png" alt="" className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl object-contain mb-2" />
+            <h1 className="text-xl sm:text-2xl font-bold text-white">meuchat</h1>
+          </div>
           <p className="text-center text-white/80 mb-6 sm:mb-8 text-sm">
             Entre para conversar com sua família
           </p>
