@@ -2,6 +2,7 @@
 
 import type { Chat } from "@/types/chat";
 import type { AppUser } from "@/types/user";
+import { Avatar } from "@/components/ui/Avatar";
 
 interface ContactsListProps {
   chats: Chat[];
@@ -66,23 +67,32 @@ export function ContactsList({
             </div>
           {chats.length > 0 && chats.map((chat) => {
                 const otherUserId = getOtherParticipant(chat, currentUserId);
+                const otherUser = users.find((u) => u.id === otherUserId);
                 const name = getUserName(otherUserId);
                 return (
                   <button
                     key={chat.id}
                     onClick={() => onSelectChat(chat.id)}
-                    className={`w-full text-left px-3 py-3 sm:py-2.5 rounded-lg text-sm transition-colors flex flex-col touch-manipulation ${
+                    className={`w-full text-left px-3 py-3 sm:py-2.5 rounded-lg text-sm transition-colors flex items-center gap-3 touch-manipulation ${
                       selectedChatId === chat.id
                         ? "bg-accent-500/30 text-white"
                         : "hover:bg-white/10 active:bg-white/15 text-white"
                     }`}
                   >
-                    <span className="font-medium truncate">{name}</span>
-                    {chat.lastMessage && (
-                      <span className="text-xs text-white/70 truncate mt-0.5">
-                        {chat.lastMessage}
-                      </span>
-                    )}
+                    <Avatar
+                      photoURL={otherUser?.photoURL ?? null}
+                      displayName={otherUser?.displayName ?? null}
+                      email={otherUser?.email ?? ""}
+                      size="sm"
+                    />
+                    <div className="min-w-0 flex-1 flex flex-col">
+                      <span className="font-medium truncate">{name}</span>
+                      {chat.lastMessage && (
+                        <span className="text-xs text-white/70 truncate mt-0.5">
+                          {chat.lastMessage}
+                        </span>
+                      )}
+                    </div>
                   </button>
                 );
               })}
@@ -105,9 +115,15 @@ export function ContactsList({
                 <button
                   key={u.id}
                   onClick={() => onSelectContact(u.id)}
-                  className="w-full text-left px-3 py-3 sm:py-2.5 rounded-lg text-sm transition-colors hover:bg-white/10 active:bg-white/15 text-white touch-manipulation"
+                  className="w-full text-left px-3 py-3 sm:py-2.5 rounded-lg text-sm transition-colors hover:bg-white/10 active:bg-white/15 text-white touch-manipulation flex items-center gap-3"
                 >
-                  <span className="font-medium truncate block">
+                  <Avatar
+                    photoURL={u.photoURL ?? null}
+                    displayName={u.displayName ?? null}
+                    email={u.email ?? ""}
+                    size="sm"
+                  />
+                  <span className="font-medium truncate">
                     {u.displayName || u.email || "Contato"}
                   </span>
                 </button>

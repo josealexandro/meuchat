@@ -25,6 +25,7 @@ export function useUsers(currentUserId: string | null) {
           id: doc.id,
           email: doc.data().email ?? "",
           displayName: doc.data().displayName ?? null,
+          photoURL: doc.data().photoURL ?? null,
         }));
       setUsers(list);
       setLoading(false);

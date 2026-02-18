@@ -41,7 +41,7 @@ export function useContacts(ownerId: string | null) {
     return () => unsubscribe();
   }, [ownerId]);
 
-  const lookupByEmail = async (email: string): Promise<{ id: string; email: string; displayName: string | null } | null> => {
+  const lookupByEmail = async (email: string): Promise<{ id: string; email: string; displayName: string | null; photoURL: string | null } | null> => {
     const emailClean = email.trim().toLowerCase();
     if (!emailClean) return null;
     try {
@@ -56,6 +56,7 @@ export function useContacts(ownerId: string | null) {
         id: doc.id,
         email: doc.data().email ?? "",
         displayName: doc.data().displayName ?? null,
+        photoURL: doc.data().photoURL ?? null,
       };
     } catch {
       return null;

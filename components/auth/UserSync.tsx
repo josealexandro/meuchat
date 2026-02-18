@@ -23,6 +23,7 @@ export function UserSync() {
         email: user.email ?? "",
         emailLower: (user.email ?? "").toLowerCase(),
         displayName: user.displayName ?? null,
+        photoURL: user.photoURL ?? null,
         updatedAt: new Date(),
       },
       { merge: true }

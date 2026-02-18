@@ -12,6 +12,10 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
     title: "meuchat",
   },
+  // Ícone na tela inicial do iPhone (Add to Home Screen)
+  icons: {
+    apple: "/icons/icon-192.png",
+  },
 };
 
 export default function RootLayout({

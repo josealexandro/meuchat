@@ -11,7 +11,8 @@ import {
   signInWithPopup,
   updateProfile,
 } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { auth, storage } from "@/lib/firebase";
 
 interface AuthContextType {
   user: User | null;
@@ -19,6 +20,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, displayName?: string) => Promise<void>;
   updateDisplayName: (displayName: string) => Promise<void>;
+  updatePhotoURL: (file: File) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -56,6 +58,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(auth.currentUser);
   };
 
+  const updatePhotoURL = async (file: File) => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) throw new Error("Não autenticado");
+    const storageRef = ref(storage, `profile/${currentUser.uid}/avatar`);
+    await uploadBytes(storageRef, file, { contentType: file.type });
+    const photoURL = await getDownloadURL(storageRef);
+    await updateProfile(currentUser, { photoURL });
+    setUser(auth.currentUser);
+  };
+
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
     await signInWithPopup(auth, provider);
@@ -73,6 +85,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signInWithGoogle,
     signOut,
     updateDisplayName,
+    updatePhotoURL,
   };
 
   return (
