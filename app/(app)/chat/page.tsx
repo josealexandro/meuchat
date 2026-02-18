@@ -22,7 +22,15 @@ function ChatPageContent() {
   const searchParams = useSearchParams();
   const { user, signOut } = useAuth();
   const { users, loading: usersLoading } = useUsers(user?.uid ?? null);
-  const { chats, loading: chatsLoading, getOrCreateChat, updateChatLastMessage, deleteChat } = useChats(user ?? null);
+  const {
+    chats,
+    loading: chatsLoading,
+    getOrCreateChat,
+    updateChatLastMessage,
+    incrementUnreadForParticipant,
+    markChatAsRead,
+    deleteChat,
+  } = useChats(user ?? null);
   const { contactIds, loading: contactsLoading, addContact, lookupByEmail } = useContacts(user?.uid ?? null);
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
   const [selectedOtherUserId, setSelectedOtherUserId] = useState<string | null>(null);
@@ -39,6 +47,11 @@ function ChatPageContent() {
       if (chat) setSelectedOtherUserId(chat.participants.find((p) => p !== user?.uid) ?? null);
     }
   }, [searchParams, chats, user?.uid]);
+
+  // Marcar conversa como lida ao abrir
+  useEffect(() => {
+    if (selectedChatId && user) markChatAsRead(selectedChatId);
+  }, [selectedChatId, user?.uid, markChatAsRead]);
 
   const selectedChat = chats.find((c) => c.id === selectedChatId);
   const otherParticipantId = selectedChat?.participants.find((p) => p !== user?.uid) ?? selectedOtherUserId;
@@ -83,7 +96,10 @@ function ChatPageContent() {
 
   const handleSendMessage = async (text: string) => {
     await sendMessage(text);
-    if (selectedChatId) await updateChatLastMessage(selectedChatId, text);
+    if (selectedChatId) {
+      await updateChatLastMessage(selectedChatId, text);
+      if (otherParticipantId) await incrementUnreadForParticipant(selectedChatId, otherParticipantId);
+    }
   };
 
   const showListOnMobile = !selectedChatId;

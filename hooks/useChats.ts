@@ -8,11 +8,13 @@ import {
   orderBy,
   onSnapshot,
   doc,
+  getDoc,
   setDoc,
   serverTimestamp,
   updateDoc,
   getDocs,
   writeBatch,
+  increment,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { FIRESTORE_COLLECTIONS } from "@/lib/constants";
@@ -60,13 +62,15 @@ export function useChats(user: User | null) {
     const chatId = getChatId(user.uid, otherUserId);
     const chatRef = doc(db, FIRESTORE_COLLECTIONS.CHATS, chatId);
 
-    const existing = chats.find((c) => c.id === chatId);
-    if (existing) return chatId;
+    const existingSnap = await getDoc(chatRef);
+    if (existingSnap.exists()) return chatId;
 
+    const participants = [user.uid, otherUserId].sort();
     await setDoc(chatRef, {
-      participants: [user.uid, otherUserId].sort(),
+      participants,
       createdAt: serverTimestamp(),
       lastMessageAt: serverTimestamp(),
+      unread: { [user.uid]: 0, [otherUserId]: 0 },
     });
 
     return chatId;
@@ -80,6 +84,27 @@ export function useChats(user: User | null) {
     await updateDoc(chatRef, {
       lastMessage,
       lastMessageAt: serverTimestamp(),
+    });
+  };
+
+  /** Incrementa contador de não lidas para o outro participante (quem envia chama isso). */
+  const incrementUnreadForParticipant = async (
+    chatId: string,
+    otherUserId: string
+  ) => {
+    if (!user) return;
+    const chatRef = doc(db, FIRESTORE_COLLECTIONS.CHATS, chatId);
+    await updateDoc(chatRef, {
+      [`unread.${otherUserId}`]: increment(1),
+    });
+  };
+
+  /** Marca a conversa como lida para o usuário atual (ao abrir o chat). */
+  const markChatAsRead = async (chatId: string) => {
+    if (!user) return;
+    const chatRef = doc(db, FIRESTORE_COLLECTIONS.CHATS, chatId);
+    await updateDoc(chatRef, {
+      [`unread.${user.uid}`]: 0,
     });
   };
 
@@ -106,5 +131,13 @@ export function useChats(user: User | null) {
     await finalBatch.commit();
   };
 
-  return { chats, loading, getOrCreateChat, updateChatLastMessage, deleteChat };
+  return {
+    chats,
+    loading,
+    getOrCreateChat,
+    updateChatLastMessage,
+    incrementUnreadForParticipant,
+    markChatAsRead,
+    deleteChat,
+  };
 }

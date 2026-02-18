@@ -6,4 +6,6 @@ export interface Chat {
   createdAt: Timestamp;
   lastMessage?: string;
   lastMessageAt?: Timestamp;
+  /** Número de mensagens não lidas por usuário: { [userId]: count } */
+  unread?: Record<string, number>;
 }

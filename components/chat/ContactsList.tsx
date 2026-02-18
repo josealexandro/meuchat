@@ -69,6 +69,7 @@ export function ContactsList({
         </div>
       ) : (
         <>
+          {/* Lista baseada só em conversas (chats no Firestore), não em contatos */}
           <div className="p-2">
             <div className="flex items-center justify-between px-3 py-1">
               <p className="text-xs font-medium text-white/60 uppercase tracking-wider">
@@ -115,6 +116,11 @@ export function ContactsList({
                           </span>
                         )}
                       </div>
+                      {(chat.unread?.[currentUserId] ?? 0) > 0 && (
+                        <span className="shrink-0 min-w-[1.25rem] h-5 px-1.5 rounded-full bg-accent-500 text-white text-xs font-medium flex items-center justify-center">
+                          {(chat.unread?.[currentUserId] ?? 0) > 99 ? "99+" : chat.unread?.[currentUserId]}
+                        </span>
+                      )}
                     </button>
                     <div className="relative flex items-center shrink-0" ref={isMenuOpen ? menuRef : undefined}>
                       <button
