@@ -22,7 +22,7 @@ function ChatPageContent() {
   const searchParams = useSearchParams();
   const { user, signOut } = useAuth();
   const { users, loading: usersLoading } = useUsers(user?.uid ?? null);
-  const { chats, loading: chatsLoading, getOrCreateChat, updateChatLastMessage } = useChats(user ?? null);
+  const { chats, loading: chatsLoading, getOrCreateChat, updateChatLastMessage, deleteChat } = useChats(user ?? null);
   const { contactIds, loading: contactsLoading, addContact, lookupByEmail } = useContacts(user?.uid ?? null);
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
   const [selectedOtherUserId, setSelectedOtherUserId] = useState<string | null>(null);
@@ -72,6 +72,13 @@ function ChatPageContent() {
   const handleBack = () => {
     setSelectedChatId(null);
     setSelectedOtherUserId(null);
+  };
+
+  const handleDeleteChat = async (chatId: string) => {
+    await deleteChat(chatId);
+    if (selectedChatId === chatId) {
+      handleBack();
+    }
   };
 
   const handleSendMessage = async (text: string) => {
@@ -127,6 +134,7 @@ function ChatPageContent() {
               selectedChatId={selectedChatId}
               onSelectChat={handleSelectChat}
               onSelectContact={handleSelectContact}
+              onDeleteChat={handleDeleteChat}
               onOpenAddContact={() => setAddContactOpen(true)}
               onOpenNewConversation={() => setNewConversationOpen(true)}
               loading={chatsLoading || usersLoading || contactsLoading}

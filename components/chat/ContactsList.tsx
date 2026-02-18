@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useRef, useEffect } from "react";
 import type { Chat } from "@/types/chat";
 import type { AppUser } from "@/types/user";
 import { Avatar } from "@/components/ui/Avatar";
@@ -12,6 +13,7 @@ interface ContactsListProps {
   selectedChatId: string | null;
   onSelectChat: (chatId: string) => void;
   onSelectContact: (otherUserId: string) => Promise<void>;
+  onDeleteChat: (chatId: string) => Promise<void>;
   onOpenAddContact: () => void;
   onOpenNewConversation: () => void;
   loading?: boolean;
@@ -29,10 +31,24 @@ export function ContactsList({
   selectedChatId,
   onSelectChat,
   onSelectContact,
+  onDeleteChat,
   onOpenAddContact,
   onOpenNewConversation,
   loading,
 }: ContactsListProps) {
+  const [menuOpenChatId, setMenuOpenChatId] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!menuOpenChatId) return;
+    const close = (e: MouseEvent) => {
+      if (menuRef.current?.contains(e.target as Node)) return;
+      setMenuOpenChatId(null);
+    };
+    document.addEventListener("click", close);
+    return () => document.removeEventListener("click", close);
+  }, [menuOpenChatId]);
+
   const getUserName = (userId: string) => {
     const u = users.find((u) => u.id === userId);
     return u?.displayName || u?.email || "Contato";
@@ -69,31 +85,70 @@ export function ContactsList({
                 const otherUserId = getOtherParticipant(chat, currentUserId);
                 const otherUser = users.find((u) => u.id === otherUserId);
                 const name = getUserName(otherUserId);
+                const isMenuOpen = menuOpenChatId === chat.id;
                 return (
-                  <button
-                    key={chat.id}
-                    onClick={() => onSelectChat(chat.id)}
-                    className={`w-full text-left px-3 py-3 sm:py-2.5 rounded-lg text-sm transition-colors flex items-center gap-3 touch-manipulation ${
-                      selectedChatId === chat.id
-                        ? "bg-accent-500/30 text-white"
-                        : "hover:bg-white/10 active:bg-white/15 text-white"
-                    }`}
-                  >
-                    <Avatar
-                      photoURL={otherUser?.photoURL ?? null}
-                      displayName={otherUser?.displayName ?? null}
-                      email={otherUser?.email ?? ""}
-                      size="sm"
-                    />
-                    <div className="min-w-0 flex-1 flex flex-col">
-                      <span className="font-medium truncate">{name}</span>
-                      {chat.lastMessage && (
-                        <span className="text-xs text-white/70 truncate mt-0.5">
-                          {chat.lastMessage}
-                        </span>
+                  <div key={chat.id} className="relative rounded-lg">
+                    <button
+                      onClick={() => onSelectChat(chat.id)}
+                      className={`w-full text-left px-3 py-3 sm:py-2.5 rounded-lg text-sm transition-colors flex items-center gap-3 touch-manipulation ${
+                        selectedChatId === chat.id
+                          ? "bg-accent-500/30 text-white"
+                          : "hover:bg-white/10 active:bg-white/15 text-white"
+                      }`}
+                    >
+                      <Avatar
+                        photoURL={otherUser?.photoURL ?? null}
+                        displayName={otherUser?.displayName ?? null}
+                        email={otherUser?.email ?? ""}
+                        size="sm"
+                      />
+                      <div className="min-w-0 flex-1 flex flex-col">
+                        <span className="font-medium truncate">{name}</span>
+                        {chat.lastMessage && (
+                          <span className="text-xs text-white/70 truncate mt-0.5">
+                            {chat.lastMessage}
+                          </span>
+                        )}
+                      </div>
+                    </button>
+                    <div className="absolute right-1 top-1/2 -translate-y-1/2" ref={isMenuOpen ? menuRef : undefined}>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setMenuOpenChatId(isMenuOpen ? null : chat.id);
+                        }}
+                        className="p-2 rounded-full text-white/60 hover:text-white hover:bg-white/10 touch-manipulation"
+                        aria-label="Opções da conversa"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                      </button>
+                      {isMenuOpen && (
+                        <div className="absolute right-0 top-full mt-1 py-1 min-w-[160px] rounded-lg bg-primary-800 border border-white/20 shadow-lg z-10">
+                          <button
+                            type="button"
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              if (!confirm("Apagar esta conversa? O contato continuará na sua lista.")) {
+                                setMenuOpenChatId(null);
+                                return;
+                              }
+                              setMenuOpenChatId(null);
+                              try {
+                                await onDeleteChat(chat.id);
+                              } catch (err) {
+                                console.error("Erro ao apagar conversa:", err);
+                              }
+                            }}
+                            className="w-full text-left px-3 py-2 text-sm text-red-200 hover:bg-red-500/20 flex items-center gap-2 touch-manipulation"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                            Apagar conversa
+                          </button>
+                        </div>
                       )}
                     </div>
-                  </button>
+                  </div>
                 );
               })}
           </div>

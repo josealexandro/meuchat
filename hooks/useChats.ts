@@ -11,6 +11,8 @@ import {
   setDoc,
   serverTimestamp,
   updateDoc,
+  getDocs,
+  writeBatch,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { FIRESTORE_COLLECTIONS } from "@/lib/constants";
@@ -81,5 +83,28 @@ export function useChats(user: User | null) {
     });
   };
 
-  return { chats, loading, getOrCreateChat, updateChatLastMessage };
+  /** Apaga a conversa e todas as mensagens. O contato continua na lista (não remove de contacts). */
+  const deleteChat = async (chatId: string) => {
+    if (!user) throw new Error("Not authenticated");
+    const messagesRef = collection(
+      db,
+      FIRESTORE_COLLECTIONS.CHATS,
+      chatId,
+      FIRESTORE_COLLECTIONS.MESSAGES
+    );
+    const snapshot = await getDocs(messagesRef);
+    const BATCH_SIZE = 500;
+    for (let i = 0; i < snapshot.docs.length; i += BATCH_SIZE) {
+      const batch = writeBatch(db);
+      const chunk = snapshot.docs.slice(i, i + BATCH_SIZE);
+      chunk.forEach((d) => batch.delete(d.ref));
+      await batch.commit();
+    }
+    const chatRef = doc(db, FIRESTORE_COLLECTIONS.CHATS, chatId);
+    const finalBatch = writeBatch(db);
+    finalBatch.delete(chatRef);
+    await finalBatch.commit();
+  };
+
+  return { chats, loading, getOrCreateChat, updateChatLastMessage, deleteChat };
 }
