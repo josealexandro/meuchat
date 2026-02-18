@@ -87,10 +87,15 @@ export function ContactsList({
                 const name = getUserName(otherUserId);
                 const isMenuOpen = menuOpenChatId === chat.id;
                 return (
-                  <div key={chat.id} className="relative rounded-lg">
+                  <div
+                    key={chat.id}
+                    className={`flex items-stretch rounded-lg ${
+                      selectedChatId === chat.id ? "bg-accent-500/30" : ""
+                    }`}
+                  >
                     <button
                       onClick={() => onSelectChat(chat.id)}
-                      className={`w-full text-left px-3 py-3 sm:py-2.5 rounded-lg text-sm transition-colors flex items-center gap-3 touch-manipulation ${
+                      className={`flex-1 min-w-0 text-left px-3 py-3 sm:py-2.5 rounded-l-lg text-sm transition-colors flex items-center gap-3 touch-manipulation ${
                         selectedChatId === chat.id
                           ? "bg-accent-500/30 text-white"
                           : "hover:bg-white/10 active:bg-white/15 text-white"
@@ -111,20 +116,24 @@ export function ContactsList({
                         )}
                       </div>
                     </button>
-                    <div className="absolute right-1 top-1/2 -translate-y-1/2" ref={isMenuOpen ? menuRef : undefined}>
+                    <div className="relative flex items-center shrink-0" ref={isMenuOpen ? menuRef : undefined}>
                       <button
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           setMenuOpenChatId(isMenuOpen ? null : chat.id);
                         }}
-                        className="p-2 rounded-full text-white/60 hover:text-white hover:bg-white/10 touch-manipulation"
+                        className={`p-3 rounded-r-lg touch-manipulation text-white/70 hover:text-white hover:bg-white/10 flex items-center justify-center ${
+                          selectedChatId === chat.id ? "bg-accent-500/30 hover:bg-accent-500/50" : ""
+                        }`}
                         aria-label="Opções da conversa"
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/>
+                        </svg>
                       </button>
                       {isMenuOpen && (
-                        <div className="absolute right-0 top-full mt-1 py-1 min-w-[160px] rounded-lg bg-primary-800 border border-white/20 shadow-lg z-10">
+                        <div className="absolute right-0 top-full mt-1 py-1 min-w-[180px] rounded-lg bg-primary-800 border border-white/20 shadow-xl z-50">
                           <button
                             type="button"
                             onClick={async (e) => {
@@ -140,7 +149,7 @@ export function ContactsList({
                                 console.error("Erro ao apagar conversa:", err);
                               }
                             }}
-                            className="w-full text-left px-3 py-2 text-sm text-red-200 hover:bg-red-500/20 flex items-center gap-2 touch-manipulation"
+                            className="w-full text-left px-4 py-3 text-sm text-red-200 hover:bg-red-500/20 flex items-center gap-2 touch-manipulation"
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
                             Apagar conversa
