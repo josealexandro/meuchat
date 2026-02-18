@@ -7,6 +7,7 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { ChatLayout } from "@/components/chat/ChatLayout";
 import { ContactsList } from "@/components/chat/ContactsList";
 import { AddContactModal } from "@/components/chat/AddContactModal";
+import { NewConversationModal } from "@/components/chat/NewConversationModal";
 import { MessageList } from "@/components/chat/MessageList";
 import { MessageInput } from "@/components/chat/MessageInput";
 import { NotificationPrompt } from "@/components/notifications/NotificationPrompt";
@@ -21,10 +22,11 @@ function ChatPageContent() {
   const { user, signOut } = useAuth();
   const { users, loading: usersLoading } = useUsers(user?.uid ?? null);
   const { chats, loading: chatsLoading, getOrCreateChat, updateChatLastMessage } = useChats(user ?? null);
-  const { contactIds, loading: contactsLoading, addContact } = useContacts(user?.uid ?? null);
+  const { contactIds, loading: contactsLoading, addContact, lookupByEmail } = useContacts(user?.uid ?? null);
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
   const [selectedOtherUserId, setSelectedOtherUserId] = useState<string | null>(null);
   const [addContactOpen, setAddContactOpen] = useState(false);
+  const [newConversationOpen, setNewConversationOpen] = useState(false);
 
   const { messages, loading: messagesLoading, error, sendMessage } = useMessages(user ?? null, selectedChatId);
 
@@ -50,6 +52,14 @@ function ChatPageContent() {
     } catch (err) {
       console.error("Erro ao iniciar conversa:", err);
     }
+  };
+
+  const handleStartChatByEmail = async (email: string): Promise<{ ok: boolean; error?: string }> => {
+    const found = await lookupByEmail(email);
+    if (!found) return { ok: false, error: "Usuário não encontrado" };
+    if (found.id === user?.uid) return { ok: false, error: "Você não pode enviar mensagem para si mesmo" };
+    await handleSelectContact(found.id);
+    return { ok: true };
   };
 
   const handleSelectChat = (chatId: string) => {
@@ -111,12 +121,18 @@ function ChatPageContent() {
               onSelectChat={handleSelectChat}
               onSelectContact={handleSelectContact}
               onOpenAddContact={() => setAddContactOpen(true)}
+              onOpenNewConversation={() => setNewConversationOpen(true)}
               loading={chatsLoading || usersLoading || contactsLoading}
             />
             <AddContactModal
               isOpen={addContactOpen}
               onClose={() => setAddContactOpen(false)}
               onAdd={addContact}
+            />
+            <NewConversationModal
+              isOpen={newConversationOpen}
+              onClose={() => setNewConversationOpen(false)}
+              onStart={handleStartChatByEmail}
             />
             </div>
           </div>
@@ -162,8 +178,8 @@ function ChatPageContent() {
         ) : (
           <div className="hidden md:flex flex-1 items-center justify-center text-white/70">
             <div className="text-center p-8">
-              <p className="text-lg mb-2">Selecione um contato</p>
-              <p className="text-sm">Escolha uma conversa ou clique em um contato para iniciar.</p>
+              <p className="text-lg mb-2">Selecione uma conversa</p>
+              <p className="text-sm">Use &quot;Nova conversa&quot; para enviar mensagem por e-mail ou escolha na lista.</p>
             </div>
           </div>
         )}

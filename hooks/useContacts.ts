@@ -41,6 +41,27 @@ export function useContacts(ownerId: string | null) {
     return () => unsubscribe();
   }, [ownerId]);
 
+  const lookupByEmail = async (email: string): Promise<{ id: string; email: string; displayName: string | null } | null> => {
+    const emailClean = email.trim().toLowerCase();
+    if (!emailClean) return null;
+    try {
+      const usersRef = collection(db, FIRESTORE_COLLECTIONS.USERS);
+      let snapshot = await getDocs(query(usersRef, where("emailLower", "==", emailClean)));
+      if (snapshot.empty) {
+        snapshot = await getDocs(query(usersRef, where("email", "==", email.trim())));
+      }
+      if (snapshot.empty) return null;
+      const doc = snapshot.docs[0];
+      return {
+        id: doc.id,
+        email: doc.data().email ?? "",
+        displayName: doc.data().displayName ?? null,
+      };
+    } catch {
+      return null;
+    }
+  };
+
   const addContact = async (email: string): Promise<{ ok: boolean; error?: string }> => {
     if (!ownerId) return { ok: false, error: "Não autenticado" };
 
@@ -87,5 +108,5 @@ export function useContacts(ownerId: string | null) {
     }
   };
 
-  return { contactIds, loading, addContact };
+  return { contactIds, loading, addContact, lookupByEmail };
 }

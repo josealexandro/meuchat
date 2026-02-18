@@ -12,6 +12,7 @@ interface ContactsListProps {
   onSelectChat: (chatId: string) => void;
   onSelectContact: (otherUserId: string) => Promise<void>;
   onOpenAddContact: () => void;
+  onOpenNewConversation: () => void;
   loading?: boolean;
 }
 
@@ -28,6 +29,7 @@ export function ContactsList({
   onSelectChat,
   onSelectContact,
   onOpenAddContact,
+  onOpenNewConversation,
   loading,
 }: ContactsListProps) {
   const getUserName = (userId: string) => {
@@ -50,12 +52,19 @@ export function ContactsList({
         </div>
       ) : (
         <>
-          {chats.length > 0 && (
-            <div className="p-2">
-              <p className="px-3 py-1 text-xs font-medium text-white/60 uppercase tracking-wider">
+          <div className="p-2">
+            <div className="flex items-center justify-between px-3 py-1">
+              <p className="text-xs font-medium text-white/60 uppercase tracking-wider">
                 Conversas
               </p>
-              {chats.map((chat) => {
+              <button
+                onClick={onOpenNewConversation}
+                className="text-xs font-medium text-accent-400 hover:text-accent-300 touch-manipulation"
+              >
+                + Nova conversa
+              </button>
+            </div>
+          {chats.length > 0 && chats.map((chat) => {
                 const otherUserId = getOtherParticipant(chat, currentUserId);
                 const name = getUserName(otherUserId);
                 return (
@@ -77,8 +86,7 @@ export function ContactsList({
                   </button>
                 );
               })}
-            </div>
-          )}
+          </div>
 
           <div className="p-2 border-t border-white/20">
             <div className="flex items-center justify-between px-3 py-1">
@@ -106,16 +114,14 @@ export function ContactsList({
               ))
             ) : (
               <p className="px-3 py-2 text-xs text-white/50">
-                Adicione pelo e-mail para conversar.
+                Adicione pelo e-mail para acesso rápido, ou use Nova conversa.
               </p>
             )}
           </div>
 
           {chats.length === 0 && contactIds.size === 0 && (
             <div className="p-4 text-center text-white/70 text-sm">
-              Nenhum contato ainda.
-              <br />
-              Peça para alguém da família entrar no app!
+              Clique em &quot;Nova conversa&quot; e digite o e-mail de quem quer chamar.
             </div>
           )}
         </>
