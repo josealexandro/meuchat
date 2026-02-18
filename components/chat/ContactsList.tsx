@@ -122,20 +122,20 @@ export function ContactsList({
                         </span>
                       )}
                     </button>
-                    <div className="relative flex items-center shrink-0" ref={isMenuOpen ? menuRef : undefined}>
+                    <div className="relative flex items-center shrink-0 w-12 min-w-12" ref={isMenuOpen ? menuRef : undefined}>
                       <button
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           setMenuOpenChatId(isMenuOpen ? null : chat.id);
                         }}
-                        className={`p-3 rounded-r-lg touch-manipulation text-white/70 hover:text-white hover:bg-white/10 flex items-center justify-center ${
-                          selectedChatId === chat.id ? "bg-accent-500/30 hover:bg-accent-500/50" : ""
+                        className={`w-12 h-12 min-w-12 min-h-12 rounded-r-lg touch-manipulation text-white hover:bg-white/15 flex items-center justify-center border-l border-white/10 ${
+                          selectedChatId === chat.id ? "bg-accent-500/30 hover:bg-accent-500/50" : "bg-white/5 hover:bg-white/10"
                         }`}
-                        aria-label="Opções da conversa"
+                        aria-label="Opções da conversa (apagar)"
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                          <circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
                         </svg>
                       </button>
                       {isMenuOpen && (
