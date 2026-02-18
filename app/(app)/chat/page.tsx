@@ -25,6 +25,7 @@ function ChatPageContent() {
   const {
     chats,
     loading: chatsLoading,
+    chatsError,
     getOrCreateChat,
     updateChatLastMessage,
     incrementUnreadForParticipant,
@@ -141,6 +142,11 @@ function ChatPageContent() {
           </div>
           <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
             <NotificationPrompt />
+            {chatsError && (
+              <div className="px-3 py-2 bg-amber-500/20 text-amber-100 text-xs rounded mx-2 mt-2">
+                {chatsError} Abra o console (F12) para detalhes.
+              </div>
+            )}
             <div className="flex-1 min-h-0 overflow-hidden">
             <ContactsList
               chats={chats}

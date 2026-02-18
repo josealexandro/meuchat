@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import type { Chat } from "@/types/chat";
 import type { AppUser } from "@/types/user";
 import { Avatar } from "@/components/ui/Avatar";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 interface ContactsListProps {
   chats: Chat[];
@@ -37,6 +38,8 @@ export function ContactsList({
   loading,
 }: ContactsListProps) {
   const [menuOpenChatId, setMenuOpenChatId] = useState<string | null>(null);
+  const [confirmDeleteChatId, setConfirmDeleteChatId] = useState<string | null>(null);
+  const [deletingChatId, setDeletingChatId] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -60,6 +63,19 @@ export function ContactsList({
   const usersWithoutChat = users.filter(
     (u) => contactIds.has(u.id) && !chatUserIds.has(u.id)
   );
+
+  const handleConfirmDelete = async () => {
+    if (!confirmDeleteChatId) return;
+    setDeletingChatId(confirmDeleteChatId);
+    try {
+      await onDeleteChat(confirmDeleteChatId);
+      setConfirmDeleteChatId(null);
+    } catch (err) {
+      console.error("Erro ao apagar conversa:", err);
+    } finally {
+      setDeletingChatId(null);
+    }
+  };
 
   return (
     <div className="flex flex-col h-full overflow-y-auto">
@@ -142,18 +158,10 @@ export function ContactsList({
                         <div className="absolute right-0 top-full mt-1 py-1 min-w-[180px] rounded-lg bg-primary-800 border border-white/20 shadow-xl z-50">
                           <button
                             type="button"
-                            onClick={async (e) => {
+                            onClick={(e) => {
                               e.stopPropagation();
-                              if (!confirm("Apagar esta conversa? O contato continuará na sua lista.")) {
-                                setMenuOpenChatId(null);
-                                return;
-                              }
                               setMenuOpenChatId(null);
-                              try {
-                                await onDeleteChat(chat.id);
-                              } catch (err) {
-                                console.error("Erro ao apagar conversa:", err);
-                              }
+                              setConfirmDeleteChatId(chat.id);
                             }}
                             className="w-full text-left px-4 py-3 text-sm text-red-200 hover:bg-red-500/20 flex items-center gap-2 touch-manipulation"
                           >
@@ -212,6 +220,18 @@ export function ContactsList({
           )}
         </>
       )}
+
+      <ConfirmDialog
+        open={confirmDeleteChatId !== null}
+        title="Apagar conversa?"
+        description="O contato continuará na sua lista. Apenas as mensagens desta conversa serão removidas."
+        confirmLabel="Apagar"
+        cancelLabel="Cancelar"
+        variant="danger"
+        loading={deletingChatId !== null}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setConfirmDeleteChatId(null)}
+      />
     </div>
   );
 }

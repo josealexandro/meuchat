@@ -7,12 +7,12 @@ import {
   where,
   orderBy,
   onSnapshot,
+  getDocs,
   doc,
   getDoc,
   setDoc,
   serverTimestamp,
   updateDoc,
-  getDocs,
   writeBatch,
   increment,
 } from "firebase/firestore";
@@ -22,13 +22,21 @@ import { getChatId } from "@/lib/chat-utils";
 import type { Chat } from "@/types/chat";
 import type { User } from "firebase/auth";
 
+function isDocNotFound(err: unknown): boolean {
+  const msg = String((err as { message?: string })?.message ?? "");
+  const code = (err as { code?: string })?.code ?? "";
+  return code === "not-found" || msg.includes("No document to update");
+}
+
 export function useChats(user: User | null) {
   const [chats, setChats] = useState<Chat[]>([]);
   const [loading, setLoading] = useState(true);
+  const [chatsError, setChatsError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) {
       setChats([]);
+      setChatsError(null);
       setLoading(false);
       return;
     }
@@ -48,13 +56,45 @@ export function useChats(user: User | null) {
           ...docSnap.data(),
         })) as Chat[];
         setChats(chatList);
+        setChatsError(null);
         setLoading(false);
       },
-      () => setLoading(false)
+      async (err: { message?: string; code?: string }) => {
+        setLoading(false);
+        // Índice composto pode não existir ainda; fallback abaixo carrega as conversas mesmo assim
+        if (err?.message?.includes("index")) {
+          console.warn("[useChats] Crie o índice no Firestore para melhor performance. Link no erro:", err.message);
+        } else {
+          console.error("[useChats] Erro na query de conversas:", err?.message || err);
+        }
+        setChatsError(err?.message ?? "Erro ao carregar conversas");
+        // Fallback: busca SEM orderBy (não exige índice composto) e ordena em memória
+        try {
+          const simpleQ = query(
+            chatsRef,
+            where("participants", "array-contains", user.uid)
+          );
+          const snap = await getDocs(simpleQ);
+          const list: Chat[] = snap.docs.map((docSnap) => ({
+            id: docSnap.id,
+            ...docSnap.data(),
+          })) as Chat[];
+          list.sort((a, b) => {
+            const at = a.lastMessageAt?.toMillis?.() ?? 0;
+            const bt = b.lastMessageAt?.toMillis?.() ?? 0;
+            return bt - at;
+          });
+          setChats(list);
+          setChatsError(null);
+        } catch (fallbackErr) {
+          console.error("[useChats] Fallback também falhou:", fallbackErr);
+          setChatsError("Não foi possível carregar as conversas. Verifique o console (F12).");
+        }
+      }
     );
 
     return () => unsubscribe();
-  }, [user]);
+  }, [user?.uid]);
 
   const getOrCreateChat = async (otherUserId: string): Promise<string> => {
     if (!user) throw new Error("Not authenticated");
@@ -80,11 +120,16 @@ export function useChats(user: User | null) {
     chatId: string,
     lastMessage: string
   ) => {
-    const chatRef = doc(db, FIRESTORE_COLLECTIONS.CHATS, chatId);
-    await updateDoc(chatRef, {
-      lastMessage,
-      lastMessageAt: serverTimestamp(),
-    });
+    try {
+      const chatRef = doc(db, FIRESTORE_COLLECTIONS.CHATS, chatId);
+      await updateDoc(chatRef, {
+        lastMessage,
+        lastMessageAt: serverTimestamp(),
+      });
+    } catch (err: unknown) {
+      if (isDocNotFound(err)) return;
+      throw err;
+    }
   };
 
   /** Incrementa contador de não lidas para o outro participante (quem envia chama isso). */
@@ -93,19 +138,29 @@ export function useChats(user: User | null) {
     otherUserId: string
   ) => {
     if (!user) return;
-    const chatRef = doc(db, FIRESTORE_COLLECTIONS.CHATS, chatId);
-    await updateDoc(chatRef, {
-      [`unread.${otherUserId}`]: increment(1),
-    });
+    try {
+      const chatRef = doc(db, FIRESTORE_COLLECTIONS.CHATS, chatId);
+      await updateDoc(chatRef, {
+        [`unread.${otherUserId}`]: increment(1),
+      });
+    } catch (err: unknown) {
+      if (isDocNotFound(err)) return;
+      throw err;
+    }
   };
 
   /** Marca a conversa como lida para o usuário atual (ao abrir o chat). */
   const markChatAsRead = async (chatId: string) => {
     if (!user) return;
-    const chatRef = doc(db, FIRESTORE_COLLECTIONS.CHATS, chatId);
-    await updateDoc(chatRef, {
-      [`unread.${user.uid}`]: 0,
-    });
+    try {
+      const chatRef = doc(db, FIRESTORE_COLLECTIONS.CHATS, chatId);
+      await updateDoc(chatRef, {
+        [`unread.${user.uid}`]: 0,
+      });
+    } catch (err: unknown) {
+      if (isDocNotFound(err)) return;
+      throw err;
+    }
   };
 
   /** Apaga a conversa e todas as mensagens. O contato continua na lista (não remove de contacts). */
@@ -134,6 +189,7 @@ export function useChats(user: User | null) {
   return {
     chats,
     loading,
+    chatsError,
     getOrCreateChat,
     updateChatLastMessage,
     incrementUnreadForParticipant,
