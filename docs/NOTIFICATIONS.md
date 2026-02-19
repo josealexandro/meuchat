@@ -85,3 +85,10 @@ match /users/{userId} {
 ### 4. Conferir Firestore
 - Firebase Console → Firestore
 - `users/{uid}` do destinatário deve ter o campo `fcmToken` (string longa)
+
+### 5. Notificações não chegam no celular (2 dispositivos)
+- **Vercel**: confirme que no build estão definidas as variáveis `NEXT_PUBLIC_FIREBASE_*` (incl. `NEXT_PUBLIC_FIREBASE_VAPID_KEY`). Sem isso, o `firebase-messaging-sw.js` não é gerado e o push quebra.
+- **Cache do SW**: em cada celular, abra o app → Configurações do site (ou Chrome → Site settings) → Limpar dados do site / “Clear & reset”. Depois abra o app de novo, aceite notificações de novo e teste. Assim o navegador baixa o service worker novo.
+- **Logs da Function**: Firebase Console → Functions → Logs. Para cada mensagem enviada, deve aparecer “Push sent”. Se aparecer “Recipient has no fcmToken”, o destinatário não tem token salvo (não ativou ou deu erro ao ativar).
+- **Permissões no celular**: Verifique se notificações do Chrome (ou Safari) estão permitidas para o site e se não há “Não perturbe” ou economia de bateria bloqueando.
+- **iOS**: Web Push só funciona em Safari 16.4+ e em PWAs “Add to Home Screen”; não funciona em abas normais do Safari em versões antigas.

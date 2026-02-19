@@ -6,6 +6,8 @@ const withPWA = require("@ducanh2912/next-pwa").default({
   cacheStartUrl: true,
   reloadOnOnline: true,
   workboxOptions: {
+    // Não cachear o SW do FCM para que atualizações do push sempre usem a versão nova
+    exclude: [/firebase-messaging-sw\.js$/],
     runtimeCaching: [
       {
         urlPattern: /^https:\/\/fonts\.(?:gstatic|googleapis)\.com\/.*/i,

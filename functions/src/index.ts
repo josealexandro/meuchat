@@ -1,10 +1,8 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 
-function getDb() {
-  if (!admin.apps.length) admin.initializeApp();
-  return admin.firestore();
-}
+admin.initializeApp();
+const db = admin.firestore();
 
 /**
  * Sends a push notification to the recipient when a new message is created.
@@ -13,7 +11,6 @@ function getDb() {
 export const onNewMessage = functions.firestore
   .document("chats/{chatId}/messages/{messageId}")
   .onCreate(async (snap, context) => {
-    const db = getDb();
     try {
       const { chatId } = context.params;
       const message = snap.data();
