@@ -1,9 +1,10 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 
-admin.initializeApp();
-
-const db = admin.firestore();
+function getDb() {
+  if (!admin.apps.length) admin.initializeApp();
+  return admin.firestore();
+}
 
 /**
  * Sends a push notification to the recipient when a new message is created.
@@ -12,6 +13,7 @@ const db = admin.firestore();
 export const onNewMessage = functions.firestore
   .document("chats/{chatId}/messages/{messageId}")
   .onCreate(async (snap, context) => {
+    const db = getDb();
     try {
       const { chatId } = context.params;
       const message = snap.data();
@@ -44,13 +46,12 @@ export const onNewMessage = functions.firestore
         return;
       }
 
+      const body = text.length > 100 ? text.slice(0, 97) + "..." : text;
       await admin.messaging().send({
         token: fcmToken,
-        notification: {
-          title: senderName,
-          body: text.length > 100 ? text.slice(0, 97) + "..." : text,
-        },
         data: {
+          title: senderName,
+          body,
           chatId,
           senderId,
           type: "message",

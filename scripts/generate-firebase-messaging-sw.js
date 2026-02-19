@@ -31,15 +31,16 @@ firebase.initializeApp(${JSON.stringify(config)});
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {
-  const title = payload.notification?.title || "meuchat";
-  const chatId = payload.data?.chatId || "";
-  const options = {
-    body: payload.notification?.body || payload.data?.text || "Nova mensagem",
+  const d = payload.data || {};
+  const title = d.title || "meuchat";
+  const body = d.body || "Nova mensagem";
+  const chatId = d.chatId || "";
+  self.registration.showNotification(title, {
+    body,
     icon: "/icons/icon-192.png",
     badge: "/icons/icon-192.png",
     data: { chatId },
-  };
-  self.registration.showNotification(title, options);
+  });
 });
 
 self.addEventListener("notificationclick", (event) => {
