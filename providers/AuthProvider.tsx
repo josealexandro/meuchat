@@ -12,7 +12,7 @@ import {
   signInWithPopup,
   updateProfile,
 } from "firebase/auth";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { deleteObject, getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { auth, storage } from "@/lib/firebase";
 
 function profilePhotoErrorMessage(err: unknown): string {
@@ -33,6 +33,22 @@ function profilePhotoErrorMessage(err: unknown): string {
     return err.message;
   }
   return err instanceof Error ? err.message : "Erro ao enviar a foto.";
+}
+
+/** Evita HTTP 412 ao sobrescrever o mesmo path (upload resumável / geração GCS). */
+async function deleteExistingProfilePhotos(uid: string) {
+  const paths = [
+    `profile/${uid}/avatar`,
+    ...["jpg", "png", "webp", "gif"].map((ext) => `profile/${uid}/avatar.${ext}`),
+  ];
+  for (const path of paths) {
+    try {
+      await deleteObject(ref(storage, path));
+    } catch (e) {
+      if (e instanceof FirebaseError && e.code === "storage/object-not-found") continue;
+      throw e;
+    }
+  }
 }
 
 function imageExtension(file: File): string {
@@ -98,6 +114,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const contentType = file.type || (ext === "png" ? "image/png" : ext === "webp" ? "image/webp" : "image/jpeg");
     const storageRef = ref(storage, `profile/${currentUser.uid}/avatar.${ext}`);
     try {
+      await deleteExistingProfilePhotos(currentUser.uid);
       await uploadBytes(storageRef, file, { contentType });
       const photoURL = await getDownloadURL(storageRef);
       await updateProfile(currentUser, { photoURL });

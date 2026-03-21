@@ -27,6 +27,9 @@ const nextConfig = {
   // Next.js 16 usa Turbopack por padrão; o plugin PWA usa webpack.
   // Config vazia evita o erro e o dev segue com Turbopack.
   turbopack: {},
+  async rewrites() {
+    return [{ source: "/favicon.ico", destination: "/icons/icon-192.svg" }];
+  },
 };
 
 module.exports = withPWA(nextConfig);
