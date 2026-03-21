@@ -21,6 +21,16 @@ function initializeFirebase(): FirebaseApp {
 
 const app = initializeFirebase();
 
+if (
+  typeof window !== "undefined" &&
+  process.env.NODE_ENV === "development" &&
+  !process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+) {
+  console.warn(
+    "[Firebase] NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET is missing. Profile photo uploads will fail until you set it (Project settings → General → Your apps)."
+  );
+}
+
 export const auth: Auth = getAuth(app);
 export const db: Firestore = getFirestore(app);
 export const storage: FirebaseStorage = getStorage(app);

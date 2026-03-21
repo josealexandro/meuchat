@@ -35,6 +35,7 @@ A production-ready private family chat built with Next.js 16, Firebase Auth, and
    - Create a project at [Firebase Console](https://console.firebase.google.com/)
    - Enable **Authentication** (Email/Password and Google provider)
    - Create a **Firestore Database**
+   - Enable **Storage** (Build → Storage). Copy the exact **storage bucket** name from Project settings → General (it may look like `project.appspot.com` or `project.firebasestorage.app`) into `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` in `.env.local`.
    - Copy `.env.example` to `.env.local` and fill in your Firebase config:
 
    ```bash
@@ -47,7 +48,13 @@ A production-ready private family chat built with Next.js 16, Firebase Auth, and
    firebase deploy --only firestore
    ```
 
-4. **Run the app**
+4. **Deploy Storage security rules** (required for profile photos)
+
+   ```bash
+   firebase deploy --only storage
+   ```
+
+5. **Run the app**
 
    ```bash
    npm run dev

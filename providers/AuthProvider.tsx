@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
+import { FirebaseError } from "firebase/app";
 import {
   User,
   signInWithEmailAndPassword,
@@ -13,6 +14,38 @@ import {
 } from "firebase/auth";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { auth, storage } from "@/lib/firebase";
+
+function profilePhotoErrorMessage(err: unknown): string {
+  if (err instanceof FirebaseError) {
+    if (err.code === "storage/unauthorized" || err.code === "storage/permission-denied") {
+      return "Sem permissão para enviar a foto. Publique as regras do Storage (firebase deploy --only storage).";
+    }
+    if (err.code === "storage/canceled") {
+      return "Envio cancelado.";
+    }
+    if (err.code === "storage/unknown") {
+      return (
+        "Não foi possível usar o armazenamento. No Firebase Console, ative Storage (Build → Storage), " +
+        "confira se NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET no .env.local coincide com o bucket do projeto " +
+        "(Configurações do projeto → Geral) e rode: firebase deploy --only storage"
+      );
+    }
+    return err.message;
+  }
+  return err instanceof Error ? err.message : "Erro ao enviar a foto.";
+}
+
+function imageExtension(file: File): string {
+  const fromName = file.name?.includes(".")
+    ? file.name.split(".").pop()!.toLowerCase()
+    : "";
+  if (["jpg", "jpeg", "png", "webp", "gif"].includes(fromName)) {
+    return fromName === "jpeg" ? "jpg" : fromName;
+  }
+  if (file.type === "image/png") return "png";
+  if (file.type === "image/webp") return "webp";
+  return "jpg";
+}
 
 interface AuthContextType {
   user: User | null;
@@ -61,11 +94,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const updatePhotoURL = async (file: File) => {
     const currentUser = auth.currentUser;
     if (!currentUser) throw new Error("Não autenticado");
-    const storageRef = ref(storage, `profile/${currentUser.uid}/avatar`);
-    await uploadBytes(storageRef, file, { contentType: file.type });
-    const photoURL = await getDownloadURL(storageRef);
-    await updateProfile(currentUser, { photoURL });
-    setUser(auth.currentUser);
+    const ext = imageExtension(file);
+    const contentType = file.type || (ext === "png" ? "image/png" : ext === "webp" ? "image/webp" : "image/jpeg");
+    const storageRef = ref(storage, `profile/${currentUser.uid}/avatar.${ext}`);
+    try {
+      await uploadBytes(storageRef, file, { contentType });
+      const photoURL = await getDownloadURL(storageRef);
+      await updateProfile(currentUser, { photoURL });
+      setUser(auth.currentUser);
+    } catch (err) {
+      throw new Error(profilePhotoErrorMessage(err));
+    }
   };
 
   const signInWithGoogle = async () => {
