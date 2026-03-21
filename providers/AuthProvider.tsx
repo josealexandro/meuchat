@@ -12,7 +12,7 @@ import {
   signInWithPopup,
   updateProfile,
 } from "firebase/auth";
-import { deleteObject, getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { deleteObject, getDownloadURL, ref, uploadBytes, type FirebaseStorage } from "firebase/storage";
 import { auth, storage } from "@/lib/firebase";
 
 function profilePhotoErrorMessage(err: unknown): string {
@@ -35,20 +35,14 @@ function profilePhotoErrorMessage(err: unknown): string {
   return err instanceof Error ? err.message : "Erro ao enviar a foto.";
 }
 
-/** Evita HTTP 412 ao sobrescrever o mesmo path (upload resumável / geração GCS). */
-async function deleteExistingProfilePhotos(uid: string) {
-  const paths = [
-    `profile/${uid}/avatar`,
-    ...["jpg", "png", "webp", "gif"].map((ext) => `profile/${uid}/avatar.${ext}`),
-  ];
-  for (const path of paths) {
-    try {
-      await deleteObject(ref(storage, path));
-    } catch (e) {
-      if (e instanceof FirebaseError && e.code === "storage/object-not-found") continue;
-      throw e;
-    }
-  }
+/** Extrai o path do objeto a partir da URL pública do Firebase Storage (SDK antigo não tem refFromURL estável). */
+function refFromDownloadURL(storage: FirebaseStorage, downloadUrl: string) {
+  const u = new URL(downloadUrl);
+  if (!u.hostname.includes("firebasestorage.googleapis.com")) return null;
+  const afterO = u.pathname.match(/\/o\/(.+)/)?.[1];
+  if (!afterO) return null;
+  const path = decodeURIComponent(afterO);
+  return ref(storage, path);
 }
 
 function imageExtension(file: File): string {
@@ -112,13 +106,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!currentUser) throw new Error("Não autenticado");
     const ext = imageExtension(file);
     const contentType = file.type || (ext === "png" ? "image/png" : ext === "webp" ? "image/webp" : "image/jpeg");
-    const storageRef = ref(storage, `profile/${currentUser.uid}/avatar.${ext}`);
+    // Nome único a cada envio evita HTTP 412 (sobrescrita / geração no GCS com upload resumável).
+    const unique = `${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
+    const storageRef = ref(storage, `profile/${currentUser.uid}/avatar_${unique}.${ext}`);
+    const previousPhotoURL = currentUser.photoURL;
     try {
-      await deleteExistingProfilePhotos(currentUser.uid);
       await uploadBytes(storageRef, file, { contentType });
       const photoURL = await getDownloadURL(storageRef);
       await updateProfile(currentUser, { photoURL });
       setUser(auth.currentUser);
+      if (previousPhotoURL?.includes("firebasestorage.googleapis.com")) {
+        const oldRef = refFromDownloadURL(storage, previousPhotoURL);
+        if (oldRef) {
+          try {
+            await deleteObject(oldRef);
+          } catch {
+            /* já apagada ou inacessível */
+          }
+        }
+      }
     } catch (err) {
       throw new Error(profilePhotoErrorMessage(err));
     }
