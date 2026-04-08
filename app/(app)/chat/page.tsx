@@ -10,6 +10,7 @@ import { AddContactModal } from "@/components/chat/AddContactModal";
 import { NewConversationModal } from "@/components/chat/NewConversationModal";
 import { MessageList } from "@/components/chat/MessageList";
 import { MessageInput } from "@/components/chat/MessageInput";
+import { VideoCall } from "@/components/chat/VideoCall";
 import { NotificationPrompt } from "@/components/notifications/NotificationPrompt";
 import { useAuth } from "@/providers/AuthProvider";
 import { Avatar } from "@/components/ui/Avatar";
@@ -208,6 +209,14 @@ function ChatPageContent() {
                   <h2 className="flex-1 text-lg font-semibold text-white truncate min-w-0">
                     {displayName}
                   </h2>
+                  {selectedChatId && user?.uid && otherParticipantId && (
+                    <VideoCall
+                      chatId={selectedChatId}
+                      currentUserId={user.uid}
+                      otherUserId={otherParticipantId}
+                      otherUserLabel={displayName}
+                    />
+                  )}
                 </div>
               }
               input={<MessageInput onSend={handleSendMessage} disabled={messagesLoading || !!error} />}

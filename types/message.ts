@@ -6,5 +6,7 @@ export interface Message {
   userId: string;
   userEmail: string;
   displayName?: string;
-  createdAt: Timestamp;
+  createdAt?: Timestamp | null;
+  deliveredAt?: Timestamp | null;
+  deliveredTo?: Record<string, Timestamp>;
 }

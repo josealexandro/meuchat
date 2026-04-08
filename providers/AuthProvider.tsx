@@ -15,6 +15,18 @@ import {
 import { deleteObject, getDownloadURL, ref, uploadBytes, type FirebaseStorage } from "firebase/storage";
 import { auth, storage } from "@/lib/firebase";
 
+function storageServerDetail(err: FirebaseError): string | null {
+  const raw = (err as FirebaseError & { customData?: { serverResponse?: string } }).customData
+    ?.serverResponse;
+  if (!raw) return null;
+  try {
+    const j = JSON.parse(raw) as { error?: { message?: string } };
+    return j.error?.message?.trim() || null;
+  } catch {
+    return raw.length > 400 ? `${raw.slice(0, 400)}…` : raw;
+  }
+}
+
 function profilePhotoErrorMessage(err: unknown): string {
   if (err instanceof FirebaseError) {
     if (err.code === "storage/unauthorized" || err.code === "storage/permission-denied") {
@@ -23,14 +35,21 @@ function profilePhotoErrorMessage(err: unknown): string {
     if (err.code === "storage/canceled") {
       return "Envio cancelado.";
     }
-    if (err.code === "storage/unknown") {
-      return (
-        "Não foi possível usar o armazenamento. No Firebase Console, ative Storage (Build → Storage), " +
-        "confira se NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET no .env.local coincide com o bucket do projeto " +
-        "(Configurações do projeto → Geral) e rode: firebase deploy --only storage"
+    const detail = storageServerDetail(err);
+    const mentions412 =
+      /412|precondition failed|service account|gcp-sa-firebasestorage/i.test(
+        `${err.message} ${detail ?? ""}`
       );
+    if (err.code === "storage/unknown" || mentions412) {
+      const checklist =
+        "No Firebase: Storage ativado, bucket certo nas variáveis de ambiente e regras publicadas (firebase deploy --only storage). " +
+        "Se na rede aparece HTTP 412: no Google Cloud Console → IAM, confira a conta " +
+        "service-NÚMERO_DO_PROJETO@gcp-sa-firebasestorage.iam.gserviceaccount.com " +
+        "com permissões de Storage/Firebase; confirme também faturação ativa no projeto.";
+      const suffix = detail ? ` Servidor: ${detail}` : "";
+      return `Não foi possível enviar a foto. ${checklist}${suffix}`;
     }
-    return err.message;
+    return detail ? `${err.message} (${detail})` : err.message;
   }
   return err instanceof Error ? err.message : "Erro ao enviar a foto.";
 }

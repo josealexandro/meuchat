@@ -8,6 +8,7 @@ import {
   onSnapshot,
   addDoc,
   serverTimestamp,
+  writeBatch,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { FIRESTORE_COLLECTIONS } from "@/lib/constants";
@@ -37,6 +38,25 @@ export function useMessages(user: User | null, chatId: string | null) {
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
+        const pendingDelivery = snapshot.docs
+          .filter((d) => {
+            const data = d.data() as Partial<Message> & { userId?: string; deliveredAt?: unknown };
+            return !!data.userId && data.userId !== user.uid && !data.deliveredAt;
+          })
+          .slice(0, 50);
+
+        if (pendingDelivery.length > 0) {
+          const batch = writeBatch(db);
+          const deliveredAt = serverTimestamp();
+          for (const d of pendingDelivery) {
+            batch.update(d.ref, {
+              deliveredAt,
+              [`deliveredTo.${user.uid}`]: deliveredAt,
+            });
+          }
+          batch.commit().catch(() => {});
+        }
+
         const msgs: Message[] = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),

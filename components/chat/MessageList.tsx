@@ -25,6 +25,14 @@ export function MessageList({ messages, currentUserId }: MessageListProps) {
       ) : (
         messages.map((message) => {
           const isOwnMessage = message.userId === currentUserId;
+          const createdAtDate = message.createdAt?.toDate?.() ?? null;
+          const deliveredAtDate = message.deliveredAt?.toDate?.() ?? null;
+          const status: "pending" | "sent" | "delivered" = !createdAtDate
+            ? "pending"
+            : deliveredAtDate
+              ? "delivered"
+              : "sent";
+
           return (
             <div
               key={message.id}
@@ -45,18 +53,69 @@ export function MessageList({ messages, currentUserId }: MessageListProps) {
                 <p className="text-[15px] break-words whitespace-pre-wrap leading-snug">
                   {message.text}
                 </p>
-                <p
-                  className={`text-[10px] mt-0.5 ${
-                    isOwnMessage ? "text-white/80" : "text-white/70"
+                <div
+                  className={`flex items-center gap-1 mt-0.5 text-[10px] ${
+                    isOwnMessage ? "text-white/80 justify-end" : "text-white/70 justify-start"
                   }`}
                 >
-                  {message.createdAt?.toDate?.()
-                    ? message.createdAt.toDate().toLocaleTimeString("pt-BR", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })
-                    : ""}
-                </p>
+                  <span>
+                    {createdAtDate
+                      ? createdAtDate.toLocaleTimeString("pt-BR", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      : ""}
+                  </span>
+                  {isOwnMessage && (
+                    <span className="inline-flex items-center">
+                      {status === "pending" ? (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="12"
+                          height="12"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <circle cx="12" cy="12" r="10" />
+                          <path d="M12 6v6l4 2" />
+                        </svg>
+                      ) : status === "sent" ? (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M20 6 9 17l-5-5" />
+                        </svg>
+                      ) : (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M18 6 7 17l-5-5" />
+                          <path d="m22 10-7.5 7.5L13 16" />
+                        </svg>
+                      )}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           );
