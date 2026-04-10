@@ -136,16 +136,23 @@ export async function writeEnded(db: Firestore, chatId: string) {
 export function listenCallDoc(
   db: Firestore,
   chatId: string,
-  onData: (data: CallDoc | null) => void
+  onData: (data: CallDoc | null) => void,
+  onError?: (err: unknown) => void
 ) {
   const { callDocRef } = getCallRefs(db, chatId);
-  return onSnapshot(callDocRef, (snap) => {
-    if (!snap.exists()) {
-      onData(null);
-      return;
+  return onSnapshot(
+    callDocRef,
+    (snap) => {
+      if (!snap.exists()) {
+        onData(null);
+        return;
+      }
+      onData(snap.data() as CallDoc);
+    },
+    (err) => {
+      onError?.(err);
     }
-    onData(snap.data() as CallDoc);
-  });
+  );
 }
 
 export function listenCandidates(
@@ -153,29 +160,36 @@ export function listenCandidates(
   chatId: string,
   kind: "offerCandidates" | "answerCandidates",
   callId: string,
-  onCandidate: (candidate: RTCIceCandidateInit) => void
+  onCandidate: (candidate: RTCIceCandidateInit) => void,
+  onError?: (err: unknown) => void
 ) {
   const refs = getCallRefs(db, chatId);
   const candidatesRef = kind === "offerCandidates" ? refs.offerCandidatesRef : refs.answerCandidatesRef;
   const q = query(candidatesRef, where("callId", "==", callId));
 
   const seen = new Set<string>();
-  return onSnapshot(q, (snap) => {
-    for (const change of snap.docChanges()) {
-      if (change.type !== "added") continue;
-      const data = change.doc.data() as Partial<IceCandidateDoc>;
-      const key = `${data.candidate ?? ""}|${data.sdpMid ?? ""}|${data.sdpMLineIndex ?? ""}`;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      if (typeof data.candidate !== "string") continue;
-      onCandidate({
-        candidate: data.candidate,
-        sdpMid: data.sdpMid ?? null,
-        sdpMLineIndex: data.sdpMLineIndex ?? null,
-        usernameFragment: typeof data.usernameFragment === "string" ? data.usernameFragment : undefined,
-      });
+  return onSnapshot(
+    q,
+    (snap) => {
+      for (const change of snap.docChanges()) {
+        if (change.type !== "added") continue;
+        const data = change.doc.data() as Partial<IceCandidateDoc>;
+        const key = `${data.candidate ?? ""}|${data.sdpMid ?? ""}|${data.sdpMLineIndex ?? ""}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        if (typeof data.candidate !== "string") continue;
+        onCandidate({
+          candidate: data.candidate,
+          sdpMid: data.sdpMid ?? null,
+          sdpMLineIndex: data.sdpMLineIndex ?? null,
+          usernameFragment: typeof data.usernameFragment === "string" ? data.usernameFragment : undefined,
+        });
+      }
+    },
+    (err) => {
+      onError?.(err);
     }
-  });
+  );
 }
 
 export async function addIceCandidateDoc(

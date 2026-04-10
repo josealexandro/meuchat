@@ -24,8 +24,12 @@ export function useMessages(user: User | null, chatId: string | null) {
     if (!user || !chatId) {
       setMessages([]);
       setLoading(false);
+      setError(null);
       return;
     }
+
+    setLoading(true);
+    setError(null);
 
     const messagesRef = collection(
       db,
@@ -83,13 +87,20 @@ export function useMessages(user: User | null, chatId: string | null) {
       chatId,
       FIRESTORE_COLLECTIONS.MESSAGES
     );
-    await addDoc(messagesRef, {
-      text,
-      userId: user.uid,
-      userEmail: user.email ?? "",
-      displayName: user.displayName ?? null,
-      createdAt: serverTimestamp(),
-    });
+    try {
+      setError(null);
+      await addDoc(messagesRef, {
+        text,
+        userId: user.uid,
+        userEmail: user.email ?? "",
+        displayName: user.displayName ?? null,
+        createdAt: serverTimestamp(),
+      });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Erro ao enviar mensagem";
+      setError(msg);
+      throw err;
+    }
   };
 
   return { messages, loading, error, sendMessage };

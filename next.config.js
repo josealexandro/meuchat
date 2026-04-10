@@ -10,6 +10,18 @@ const withPWA = require("@ducanh2912/next-pwa").default({
     exclude: [/firebase-messaging-sw\.js$/],
     runtimeCaching: [
       {
+        urlPattern: /^https:\/\/firestore\.googleapis\.com\/.*/i,
+        handler: "NetworkOnly",
+        method: "GET",
+        options: { cacheName: "firestore-network-only" },
+      },
+      {
+        urlPattern: /^https:\/\/firestore\.googleapis\.com\/.*/i,
+        handler: "NetworkOnly",
+        method: "POST",
+        options: { cacheName: "firestore-network-only" },
+      },
+      {
         urlPattern: /^https:\/\/fonts\.(?:gstatic|googleapis)\.com\/.*/i,
         handler: "CacheFirst",
         options: {

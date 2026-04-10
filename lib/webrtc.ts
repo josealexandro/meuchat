@@ -8,9 +8,15 @@ export function createPeerConnection(callbacks: WebRTCCallbacks): RTCPeerConnect
     iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
   });
 
+  const remoteStream = new MediaStream();
+
   pc.ontrack = (event) => {
-    const [stream] = event.streams;
-    if (stream) callbacks.onRemoteStream(stream);
+    if (event.streams && event.streams.length > 0) {
+      callbacks.onRemoteStream(event.streams[0] as MediaStream);
+      return;
+    }
+    remoteStream.addTrack(event.track);
+    callbacks.onRemoteStream(remoteStream);
   };
 
   pc.onicecandidate = (event) => {

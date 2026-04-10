@@ -40,6 +40,10 @@ export function VideoCall({ chatId, currentUserId, otherUserId, otherUserLabel }
 
   const label = useMemo(() => otherUserLabel || "Contato", [otherUserLabel]);
 
+  const isPermissionDenied = (err: unknown) =>
+    String((err as { code?: string; message?: string })?.code ?? "").includes("permission-denied") ||
+    String((err as { message?: string })?.message ?? "").toLowerCase().includes("permission");
+
   useEffect(() => {
     uiStateRef.current = uiState;
   }, [uiState]);
@@ -80,6 +84,16 @@ export function VideoCall({ chatId, currentUserId, otherUserId, otherUserLabel }
     await cleanup();
   };
 
+  const setVideoStream = async (video: HTMLVideoElement | null, stream: MediaStream | null) => {
+    if (!video) return;
+    video.srcObject = stream;
+    if (stream) {
+      try {
+        await video.play();
+      } catch {}
+    }
+  };
+
   const startCall = async () => {
     setError(null);
     try {
@@ -107,12 +121,12 @@ export function VideoCall({ chatId, currentUserId, otherUserId, otherUserLabel }
 
       const localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       localStreamRef.current = localStream;
-      if (localVideoRef.current) localVideoRef.current.srcObject = localStream;
+      await setVideoStream(localVideoRef.current, localStream);
 
       const pc = createPeerConnection({
         onRemoteStream: (stream) => {
           remoteStreamRef.current = stream;
-          if (remoteVideoRef.current) remoteVideoRef.current.srcObject = stream;
+          setVideoStream(remoteVideoRef.current, stream).catch(() => {});
           setUiState("inCall");
         },
         onIceCandidate: (candidate) => {
@@ -127,28 +141,46 @@ export function VideoCall({ chatId, currentUserId, otherUserId, otherUserLabel }
       await publishOffer(db, chatId, { offer, callId });
 
       unsubRemoteCandidatesRef.current?.();
-      unsubRemoteCandidatesRef.current = listenCandidates(db, chatId, "answerCandidates", callId, (candidate) => {
-        pc.addIceCandidate(candidate).catch(() => {});
-      });
+      unsubRemoteCandidatesRef.current = listenCandidates(
+        db,
+        chatId,
+        "answerCandidates",
+        callId,
+        (candidate) => {
+          pc.addIceCandidate(candidate).catch(() => {});
+        },
+        (err) => {
+          if (!isPermissionDenied(err)) console.error("[VideoCall] listenCandidates(answer) failed:", err);
+        }
+      );
 
       unsubAnswerWatcherRef.current?.();
-      unsubAnswerWatcherRef.current = listenCallDoc(db, chatId, (data) => {
-        if (!data) return;
-        if (data.callId && data.callId !== callIdRef.current) return;
-        if (data.status === "ended") {
-          cleanup().catch(() => {});
-          return;
+      unsubAnswerWatcherRef.current = listenCallDoc(
+        db,
+        chatId,
+        (data) => {
+          if (!data) return;
+          if (data.callId && data.callId !== callIdRef.current) return;
+          if (data.status === "ended") {
+            cleanup().catch(() => {});
+            return;
+          }
+          if (!data.answer) return;
+          if (pc.currentRemoteDescription) return;
+          pc.setRemoteDescription(new RTCSessionDescription(data.answer)).catch(() => {});
+        },
+        (err) => {
+          if (!isPermissionDenied(err)) console.error("[VideoCall] listenCallDoc(answer) failed:", err);
         }
-        if (!data.answer) return;
-        if (pc.currentRemoteDescription) return;
-        pc.setRemoteDescription(new RTCSessionDescription(data.answer)).catch(() => {});
-      });
+      );
     } catch (err: unknown) {
       try {
         if (callIdRef.current) await writeEnded(db, chatId);
       } catch {}
-      setError((err as { message?: string })?.message ?? "Falha ao iniciar chamada");
+      const msg = String((err as { message?: string })?.message ?? "");
+      setError(msg.includes("permission") ? "Sem permissão no Firestore para iniciar chamada (verifique as Rules)." : (msg || "Falha ao iniciar chamada"));
       setUiState("error");
+      setPanelOpen(true);
     }
   };
 
@@ -165,12 +197,12 @@ export function VideoCall({ chatId, currentUserId, otherUserId, otherUserLabel }
 
       const localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       localStreamRef.current = localStream;
-      if (localVideoRef.current) localVideoRef.current.srcObject = localStream;
+      await setVideoStream(localVideoRef.current, localStream);
 
       const pc = createPeerConnection({
         onRemoteStream: (stream) => {
           remoteStreamRef.current = stream;
-          if (remoteVideoRef.current) remoteVideoRef.current.srcObject = stream;
+          setVideoStream(remoteVideoRef.current, stream).catch(() => {});
         },
         onIceCandidate: (candidate) => {
           addIceCandidateDoc(db, chatId, "answerCandidates", callId, candidate).catch(() => {});
@@ -185,9 +217,18 @@ export function VideoCall({ chatId, currentUserId, otherUserId, otherUserLabel }
       await writeAnswer(db, chatId, { answer });
 
       unsubRemoteCandidatesRef.current?.();
-      unsubRemoteCandidatesRef.current = listenCandidates(db, chatId, "offerCandidates", callId, (candidate) => {
-        pc.addIceCandidate(candidate).catch(() => {});
-      });
+      unsubRemoteCandidatesRef.current = listenCandidates(
+        db,
+        chatId,
+        "offerCandidates",
+        callId,
+        (candidate) => {
+          pc.addIceCandidate(candidate).catch(() => {});
+        },
+        (err) => {
+          if (!isPermissionDenied(err)) console.error("[VideoCall] listenCandidates(offer) failed:", err);
+        }
+      );
 
       setIncomingOffer(null);
       setIncomingCallId(null);
@@ -195,48 +236,58 @@ export function VideoCall({ chatId, currentUserId, otherUserId, otherUserLabel }
       try {
         if (callIdRef.current) await writeEnded(db, chatId);
       } catch {}
-      setError((err as { message?: string })?.message ?? "Falha ao atender chamada");
+      const msg = String((err as { message?: string })?.message ?? "");
+      setError(msg.includes("permission") ? "Sem permissão no Firestore para atender chamada (verifique as Rules)." : (msg || "Falha ao atender chamada"));
       setUiState("error");
+      setPanelOpen(true);
     }
   };
 
   useEffect(() => {
     if (!chatId || !currentUserId || !otherUserId) return;
     unsubCallDocRef.current?.();
-    unsubCallDocRef.current = listenCallDoc(db, chatId, (data) => {
-      if (!data) {
-        setIncomingOffer(null);
-        setIncomingCallId(null);
-        if (uiStateRef.current !== "calling" && uiStateRef.current !== "inCall") setUiState("idle");
-        return;
-      }
-
-      if (data.status === "ended") {
-        cleanup().catch(() => {});
-        return;
-      }
-
-      if (data.status === "ringing") {
-        if (data.to === currentUserId) {
+    unsubCallDocRef.current = listenCallDoc(
+      db,
+      chatId,
+      (data) => {
+        if (!data) {
           setIncomingOffer(null);
+          setIncomingCallId(null);
+          if (uiStateRef.current !== "calling" && uiStateRef.current !== "inCall") setUiState("idle");
+          return;
+        }
+
+        if (data.status === "ended") {
+          cleanup().catch(() => {});
+          return;
+        }
+
+        if (data.status === "ringing") {
+          if (data.to === currentUserId) {
+            setIncomingOffer(null);
+            setIncomingCallId(data.callId ?? null);
+            setPanelOpen(true);
+            if (uiStateRef.current !== "inCall" && uiStateRef.current !== "calling") setUiState("incoming");
+          } else if (data.from === currentUserId) {
+            setPanelOpen(true);
+            if (uiStateRef.current !== "inCall") setUiState("calling");
+          }
+          return;
+        }
+
+        if (data.status === "offered" && data.to === currentUserId) {
           setIncomingCallId(data.callId ?? null);
+          if (data.offer) setIncomingOffer(data.offer);
           setPanelOpen(true);
           if (uiStateRef.current !== "inCall" && uiStateRef.current !== "calling") setUiState("incoming");
-        } else if (data.from === currentUserId) {
-          setPanelOpen(true);
-          if (uiStateRef.current !== "inCall") setUiState("calling");
+          return;
         }
-        return;
+      },
+      (err) => {
+        if (isPermissionDenied(err)) return;
+        console.error("[VideoCall] listenCallDoc failed:", err);
       }
-
-      if (data.status === "offered" && data.to === currentUserId) {
-        setIncomingCallId(data.callId ?? null);
-        if (data.offer) setIncomingOffer(data.offer);
-        setPanelOpen(true);
-        if (uiStateRef.current !== "inCall" && uiStateRef.current !== "calling") setUiState("incoming");
-        return;
-      }
-    });
+    );
 
     return () => {
       unsubCallDocRef.current?.();
@@ -282,6 +333,7 @@ export function VideoCall({ chatId, currentUserId, otherUserId, otherUserLabel }
       >
         Encerrar
       </button>
+      {error && !panelOpen && <span className="text-xs text-red-200/90">{error}</span>}
 
       {panelOpen && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-3">

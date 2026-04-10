@@ -97,10 +97,23 @@ function ChatPageContent() {
   };
 
   const handleSendMessage = async (text: string) => {
-    await sendMessage(text);
-    if (selectedChatId) {
+    try {
+      await sendMessage(text);
+    } catch (err) {
+      console.error("Erro ao enviar mensagem:", err);
+      return;
+    }
+
+    if (!selectedChatId) return;
+    try {
       await updateChatLastMessage(selectedChatId, text);
+    } catch (err) {
+      console.error("Erro ao atualizar lastMessage:", err);
+    }
+    try {
       if (otherParticipantId) await incrementUnreadForParticipant(selectedChatId, otherParticipantId);
+    } catch (err) {
+      console.error("Erro ao incrementar não lidas:", err);
     }
   };
 
@@ -219,7 +232,7 @@ function ChatPageContent() {
                   )}
                 </div>
               }
-              input={<MessageInput onSend={handleSendMessage} disabled={messagesLoading || !!error} />}
+              input={<MessageInput onSend={handleSendMessage} disabled={messagesLoading} />}
             >
               {error && (
                 <div className="p-3 mx-3 mt-3 rounded-lg bg-red-500/20 text-red-100 text-sm">

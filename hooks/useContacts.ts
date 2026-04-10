@@ -32,11 +32,19 @@ export function useContacts(ownerId: string | null) {
       FIRESTORE_COLLECTIONS.CONTACTS
     );
 
-    const unsubscribe = onSnapshot(contactsRef, (snapshot) => {
-      const ids = new Set(snapshot.docs.map((d) => d.id));
-      setContactIds(ids);
-      setLoading(false);
-    });
+    const unsubscribe = onSnapshot(
+      contactsRef,
+      (snapshot) => {
+        const ids = new Set(snapshot.docs.map((d) => d.id));
+        setContactIds(ids);
+        setLoading(false);
+      },
+      (err) => {
+        setContactIds(new Set());
+        setLoading(false);
+        console.error("[useContacts] onSnapshot failed:", err);
+      }
+    );
 
     return () => unsubscribe();
   }, [ownerId]);
